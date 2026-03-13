@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>客户门户系统 - 登录</title>
+    <!-- Tailwind CSS v3 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- Inter 字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1a365d',      // 主色调：深蓝色
+                        secondary: '#4299e1',    // 辅助色：浅蓝色
+                        success: '#38a169',      // 成功绿
+                        warning: '#ed8936',      // 警告黄
+                        danger: '#e53e3e',       // 错误红
+                        info: '#3182ce',         // 信息蓝
+                        'neutral-50': '#f7fafc',  // 浅灰
+                        'neutral-100': '#e2e8f0', // 中灰
+                        'neutral-200': '#cbd5e0', // 中浅灰
+                        'neutral-600': '#4a5568', // 深灰
+                        'neutral-800': '#1a202c', // 黑色
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'card': '0 1px 3px rgba(0, 0, 0, 0.1)',
+                        'card-hover': '0 4px 6px rgba(0, 0, 0, 0.1)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .bg-gradient-login {
+                background: linear-gradient(135deg, #ebf8ff 0%, #ffffff 100%);
+            }
+            .transition-all-300 {
+                transition: all 0.3s ease;
+            }
+            .input-focus {
+                @apply focus:border-secondary focus:ring-2 focus:ring-secondary/20 focus:outline-none;
+            }
+            .btn-primary {
+                @apply bg-primary text-white h-12 rounded-md font-semibold hover:bg-primary/90 transition-all-300;
+            }
+            .btn-secondary {
+                @apply bg-white border border-neutral-100 text-primary h-12 rounded-md font-semibold hover:bg-neutral-50 transition-all-300;
+            }
+            .card {
+                @apply bg-white rounded-xl shadow-card p-8 transition-all-300 hover:shadow-card-hover;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-login min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+        <!-- 登录卡片 -->
+        <div class="card">
+            <!-- Logo -->
+            <div class="flex justify-center mb-6">
+                <img src="https://p26-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/a47676c77bd84b4ca933b955dddb8587~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=20260311154010731D437AA042CD1B2918&rrcfp=f06b921b&x-expires=1775806828&x-signature=D019YBWhH3Nv275Bq52KeCyKpik%3D" alt="系统Logo" class="h-20 w-20">
+            </div>
+            
+            <!-- 标题 -->
+            <h1 class="text-2xl font-bold text-center text-primary mb-4">客户门户系统</h1>
+            <p class="text-neutral-600 text-center mb-8">请登录以访问您的账户</p>
+            
+            <!-- 错误提示区域 -->
+            <div id="error-message" class="hidden bg-red-50 border border-red-200 text-red-600 text-sm rounded-md p-3 mb-4">
+                <i class="fa fa-exclamation-circle mr-2"></i>
+                <span id="error-text"></span>
+            </div>
+            
+            <!-- 登录表单 -->
+            <form id="login-form">
+                <!-- 客户代码 -->
+                <div class="mb-4">
+                    <label for="customer-code" class="block text-sm font-medium text-neutral-600 mb-1">客户代码</label>
+                    <input 
+                        type="text" 
+                        id="customer-code" 
+                        name="customerCode" 
+                        class="w-full h-12 px-3 py-2 border border-neutral-100 rounded-md input-focus"
+                        placeholder="请输入客户代码"
+                        required
+                    >
+                </div>
+                
+                <!-- 密码 -->
+                <div class="mb-6">
+                    <label for="password" class="block text-sm font-medium text-neutral-600 mb-1">密码</label>
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            class="w-full h-12 px-3 py-2 border border-neutral-100 rounded-md input-focus"
+                            placeholder="请输入密码"
+                            required
+                        >
+                        <button 
+                            type="button" 
+                            id="toggle-password" 
+                            class="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-600"
+                        >
+                            <i class="fa fa-eye-slash"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 记住登录状态 -->
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center">
+                        <input 
+                            type="checkbox" 
+                            id="remember-me" 
+                            name="rememberMe" 
+                            class="h-4 w-4 text-primary border-neutral-100 rounded"
+                        >
+                        <label for="remember-me" class="ml-2 block text-sm text-neutral-600">
+                            记住登录状态（7天）
+                        </label>
+                    </div>
+                    <a href="#" class="text-sm text-secondary hover:text-secondary/80">忘记密码？</a>
+                </div>
+                
+                <!-- 登录按钮 -->
+                <button 
+                    type="submit" 
+                    id="login-button" 
+                    class="w-full btn-primary mb-4"
+                >
+                    登录
+                </button>
+                
+                <!-- Azure 单点登录 -->
+                <button 
+                    type="button" 
+                    id="azure-login-button" 
+                    class="w-full btn-secondary mb-4 flex items-center justify-center"
+                >
+                    <i class="fa fa-windows mr-2"></i>
+                    使用 Azure 单点登录
+                </button>
+                
+                <!-- DRM系统跳转 -->
+                <div class="text-center">
+                    <span class="text-sm text-neutral-600">需要访问 DRM 系统？</span>
+                    <a href="#" class="text-sm text-secondary hover:text-secondary/80 ml-1">点击此处</a>
+                </div>
+            </form>
+        </div>
+        
+        <!-- 版权信息 -->
+        <div class="text-center mt-6 text-sm text-neutral-600">
+            © 2026 客户门户系统. 保留所有权利.
+        </div>
+    </div>
+
+    <script>
+        // 模拟数据
+        const mockUser = {
+            customerCode: 'sa',
+            password: '123'
+        };
+        
+        // DOM 元素
+        const loginForm = document.getElementById('login-form');
+        const errorMessage = document.getElementById('error-message');
+        const errorText = document.getElementById('error-text');
+        const togglePassword = document.getElementById('toggle-password');
+        const passwordInput = document.getElementById('password');
+        const loginButton = document.getElementById('login-button');
+        const azureLoginButton = document.getElementById('azure-login-button');
+        
+        // 切换密码可见性
+        togglePassword.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            togglePassword.innerHTML = type === 'password' ? '<i class="fa fa-eye-slash"></i>' : '<i class="fa fa-eye"></i>';
+        });
+        
+        // 显示错误信息
+        function showError(message) {
+            errorText.textContent = message;
+            errorMessage.classList.remove('hidden');
+        }
+        
+        // 隐藏错误信息
+        function hideError() {
+            errorMessage.classList.add('hidden');
+        }
+        
+        // 表单提交处理
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            hideError();
+            
+            const customerCode = document.getElementById('customer-code').value;
+            const password = passwordInput.value;
+            
+            // 模拟登录验证
+            if (customerCode === mockUser.customerCode && password === mockUser.password) {
+                // 登录成功，跳转到Dashboard
+                window.location.href = 'dashboard.html';
+            } else {
+                // 登录失败，显示错误信息
+                showError('客户代码或密码错误，请重试。');
+            }
+        });
+        
+        // Azure 单点登录处理
+        azureLoginButton.addEventListener('click', () => {
+            showError('Azure 单点登录功能正在开发中，敬请期待。');
+        });
+        
+        // 输入时隐藏错误信息
+        document.getElementById('customer-code').addEventListener('input', hideError);
+        passwordInput.addEventListener('input', hideError);
+    </script>
+</body>
+</html>

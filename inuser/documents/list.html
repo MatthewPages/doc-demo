@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文档列表 - eDOC 管理系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#64748b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444',
+                        dark: '#1e293b',
+                        light: '#f8fafc'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .sidebar-active {
+                @apply bg-primary text-white;
+            }
+            .sidebar-item {
+                @apply flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700;
+            }
+            .sidebar-item.active {
+                @apply bg-primary text-white;
+            }
+            .card {
+                @apply bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 transition-all duration-300 hover:shadow-lg;
+            }
+            .btn {
+                @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+            }
+            .btn-primary {
+                @apply bg-primary text-white hover:bg-primary/90 focus:ring-primary;
+            }
+            .btn-secondary {
+                @apply bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 focus:ring-gray-400;
+            }
+            .btn-success {
+                @apply bg-success text-white hover:bg-success/90 focus:ring-success;
+            }
+            .btn-warning {
+                @apply bg-warning text-white hover:bg-warning/90 focus:ring-warning;
+            }
+            .btn-danger {
+                @apply bg-danger text-white hover:bg-danger/90 focus:ring-danger;
+            }
+            .input {
+                @apply w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent;
+            }
+            .table-container {
+                @apply overflow-x-auto;
+            }
+            .table {
+                @apply w-full min-w-full divide-y divide-gray-200 dark:divide-gray-700;
+            }
+            .table th {
+                @apply px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider bg-gray-50 dark:bg-gray-800;
+            }
+            .table td {
+                @apply px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100;
+            }
+            .table tr {
+                @apply bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white dark:bg-gray-800 shadow-sm z-10">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <button id="sidebar-toggle" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none lg:hidden">
+                    <i class="fa fa-bars text-xl"></i>
+                </button>
+                <h1 class="text-xl font-bold text-primary">eDOC 管理系统</h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="relative">
+                    <input type="text" placeholder="搜索..." class="input pl-10 pr-4 py-2 text-sm w-64">
+                    <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none relative">
+                        <i class="fa fa-bell text-xl"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">
+                            <i class="fa fa-user"></i>
+                        </div>
+                        <span class="hidden md:inline">管理员</span>
+                        <i class="fa fa-chevron-down text-xs text-gray-500 dark:text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex flex-1 overflow-hidden">
+        <!-- 侧边栏 -->
+        <aside id="sidebar" class="w-64 bg-white dark:bg-gray-800 shadow-md transform -translate-x-full lg:translate-x-0 fixed lg:relative top-0 left-0 h-full z-20 transition-transform duration-300 ease-in-out">
+            <div class="p-4 h-full flex flex-col">
+                <div class="flex items-center gap-2 mb-8">
+                    <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-white">
+                        <i class="fa fa-file-text-o text-xl"></i>
+                    </div>
+                    <h2 class="text-lg font-semibold">eDOC</h2>
+                </div>
+                <nav class="flex-1 space-y-1">
+                    <a href="../index.html" class="sidebar-item">
+                        <i class="fa fa-dashboard w-5 text-center"></i>
+                        <span>管理概览</span>
+                    </a>
+                    <div class="space-y-1">
+                        <button class="sidebar-item justify-between active">
+                            <div class="flex items-center gap-3">
+                                <i class="fa fa-folder-open w-5 text-center"></i>
+                                <span>文档管理</span>
+                            </div>
+                            <i class="fa fa-chevron-down text-xs rotate-180"></i>
+                        </button>
+                        <div class="pl-8 space-y-1">
+                            <a href="list.html" class="sidebar-item text-sm active">
+                                <span>文档列表</span>
+                            </a>
+                            <a href="add.html" class="sidebar-item text-sm">
+                                <span>文档补录</span>
+                            </a>
+                            <a href="audit.html" class="sidebar-item text-sm">
+                                <span>文档审核</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <button class="sidebar-item justify-between">
+                            <div class="flex items-center gap-3">
+                                <i class="fa fa-users w-5 text-center"></i>
+                                <span>客户管理</span>
+                            </div>
+                            <i class="fa fa-chevron-down text-xs"></i>
+                        </button>
+                        <div class="pl-8 space-y-1 hidden">
+                            <a href="../customers/list.html" class="sidebar-item text-sm">
+                                <span>客户列表</span>
+                            </a>
+                            <a href="../customers/add.html" class="sidebar-item text-sm">
+                                <span>新建客户</span>
+                            </a>
+                            <a href="../customers/logs.html" class="sidebar-item text-sm">
+                                <span>客户操作日志</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <button class="sidebar-item justify-between">
+                            <div class="flex items-center gap-3">
+                                <i class="fa fa-plug w-5 text-center"></i>
+                                <span>系统对接</span>
+                            </div>
+                            <i class="fa fa-chevron-down text-xs"></i>
+                        </button>
+                        <div class="pl-8 space-y-1 hidden">
+                            <a href="../system/configuration.html" class="sidebar-item text-sm">
+                                <span>对接系统配置</span>
+                            </a>
+                            <a href="../system/tasks.html" class="sidebar-item text-sm">
+                                <span>同步任务管理</span>
+                            </a>
+                            <a href="../system/logs.html" class="sidebar-item text-sm">
+                                <span>接口日志监控</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <button class="sidebar-item justify-between">
+                            <div class="flex items-center gap-3">
+                                <i class="fa fa-bar-chart w-5 text-center"></i>
+                                <span>统计分析</span>
+                            </div>
+                            <i class="fa fa-chevron-down text-xs"></i>
+                        </button>
+                        <div class="pl-8 space-y-1 hidden">
+                            <a href="../analytics/dashboard.html" class="sidebar-item text-sm">
+                                <span>数据看板</span>
+                            </a>
+                            <a href="../analytics/reports.html" class="sidebar-item text-sm">
+                                <span>报表中心</span>
+                            </a>
+                            <a href="../analytics/hotspots.html" class="sidebar-item text-sm">
+                                <span>检索热点分析</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <button class="sidebar-item justify-between">
+                            <div class="flex items-center gap-3">
+                                <i class="fa fa-lock w-5 text-center"></i>
+                                <span>权限管理</span>
+                            </div>
+                            <i class="fa fa-chevron-down text-xs"></i>
+                        </button>
+                        <div class="pl-8 space-y-1 hidden">
+                            <a href="../permissions/roles.html" class="sidebar-item text-sm">
+                                <span>角色管理</span>
+                            </a>
+                            <a href="../permissions/users.html" class="sidebar-item text-sm">
+                                <span>用户管理</span>
+                            </a>
+                            <a href="../permissions/logs.html" class="sidebar-item text-sm">
+                                <span>操作日志</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <button class="sidebar-item justify-between">
+                            <div class="flex items-center gap-3">
+                                <i class="fa fa-cog w-5 text-center"></i>
+                                <span>系统设置</span>
+                            </div>
+                            <i class="fa fa-chevron-down text-xs"></i>
+                        </button>
+                        <div class="pl-8 space-y-1 hidden">
+                            <a href="../settings/basic.html" class="sidebar-item text-sm">
+                                <span>基础配置</span>
+                            </a>
+                            <a href="../settings/dictionary.html" class="sidebar-item text-sm">
+                                <span>字典管理</span>
+                            </a>
+                        </div>
+                    </div>
+                </nav>
+                <div class="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <a href="#" class="sidebar-item">
+                        <i class="fa fa-question-circle w-5 text-center"></i>
+                        <span>帮助中心</span>
+                    </a>
+                    <a href="#" class="sidebar-item">
+                        <i class="fa fa-sign-out w-5 text-center"></i>
+                        <span>退出登录</span>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 遮罩层 -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-10 lg:hidden hidden"></div>
+
+        <!-- 内容区 -->
+        <main class="flex-1 overflow-y-auto p-4 lg:p-6">
+            <div class="container mx-auto">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold">文档列表</h2>
+                    <div class="flex items-center gap-3">
+                        <button class="btn btn-primary">
+                            <i class="fa fa-plus mr-2"></i>上传文档
+                        </button>
+                        <button class="btn btn-secondary">
+                            <i class="fa fa-download mr-2"></i>导出
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 高级筛选 -->
+                <div class="card mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold">高级筛选</h3>
+                        <button id="filter-toggle" class="text-primary hover:underline text-sm">
+                            <i class="fa fa-chevron-down mr-1"></i>展开/收起
+                        </button>
+                    </div>
+                    <div id="filter-content" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">文档类型</label>
+                            <select class="input">
+                                <option value="">全部</option>
+                                <option value="合同">合同</option>
+                                <option value="发票">发票</option>
+                                <option value="报表">报表</option>
+                                <option value="其他">其他</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">状态</label>
+                            <select class="input">
+                                <option value="">全部</option>
+                                <option value="待审核">待审核</option>
+                                <option value="已通过">已通过</option>
+                                <option value="已拒绝">已拒绝</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">上传日期</label>
+                            <input type="date" class="input">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">客户</label>
+                            <select class="input">
+                                <option value="">全部客户</option>
+                                <option value="客户A">客户A</option>
+                                <option value="客户B">客户B</option>
+                                <option value="客户C">客户C</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2 lg:col-span-4 flex items-center gap-3 mt-4">
+                            <button class="btn btn-primary">
+                                <i class="fa fa-search mr-2"></i>筛选
+                            </button>
+                            <button class="btn btn-secondary">
+                                <i class="fa fa-refresh mr-2"></i>重置
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 文档列表 -->
+                <div class="card">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="relative">
+                                <input type="text" placeholder="搜索文档..." class="input pl-10 pr-4 py-2 text-sm w-64">
+                                <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            </div>
+                            <select class="input text-sm w-40">
+                                <option value="10">10条/页</option>
+                                <option value="20">20条/页</option>
+                                <option value="50">50条/页</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button class="btn btn-secondary" disabled>
+                                <i class="fa fa-trash mr-2"></i>删除
+                            </button>
+                            <button class="btn btn-secondary" disabled>
+                                <i class="fa fa-edit mr-2"></i>编辑
+                            </button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th class="w-10">
+                                        <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary">
+                                    </th>
+                                    <th>文档名称</th>
+                                    <th>文档类型</th>
+                                    <th>客户</th>
+                                    <th>上传时间</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary">
+                                    </td>
+                                    <td>
+                                        <a href="detail.html" class="text-primary hover:underline">销售合同-20230601.pdf</a>
+                                    </td>
+                                    <td>合同</td>
+                                    <td>客户A</td>
+                                    <td>2023-06-01 10:30</td>
+                                    <td>
+                                        <span class="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                            已通过
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="flex items-center gap-2">
+                                            <a href="detail.html" class="text-primary hover:underline">
+                                                <i class="fa fa-eye"></i>
+                                            </a>
+                                            <a href="edit.html" class="text-gray-500 hover:text-primary">
+                                                <i class="fa fa-edit"></i>
+                                            </a>
+                                            <a href="#" class="text-danger hover:underline">
+                                                <i class="fa fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary">
+                                    </td>
+                                    <td>
+                                        <a href="detail.html" class="text-primary hover:underline">采购发票-20230528.pdf</a>
+                                    </td>
+                                    <td>发票</td>
+                                    <td>客户B</td>
+                                    <td>2023-05-28 14:20</td>
+                                    <td>
+                                        <span class="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                                            待审核
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="flex items-center gap-2">
+                                            <a href="detail.html" class="text-primary hover:underline">
+                                                <i class="fa fa-eye"></i>
+                                            </a>
+                                            <a href="edit.html" class="text-gray-500 hover:text-primary">
+                                                <i class="fa fa-edit"></i>
+                                            </a>
+                                            <a href="#" class="text-danger hover:underline">
+                                                <i class="fa fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary">
+                                    </td>
+                                    <td>
+                                        <a href="detail.html" class="text-primary hover:underline">月度报表-202305.xlsx</a>
+                                    </td>
+                                    <td>报表</td>
+                                    <td>客户C</td>
+                                    <td>2023-06-01 09:15</td>
+                                    <td>
+                                        <span class="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                            已拒绝
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="flex items-center gap-2">
+                                            <a href="detail.html" class="text-primary hover:underline">
+                                                <i class="fa fa-eye"></i>
+                                            </a>
+                                            <a href="edit.html" class="text-gray-500 hover:text-primary">
+                                                <i class="fa fa-edit"></i>
+                                            </a>
+                                            <a href="#" class="text-danger hover:underline">
+                                                <i class="fa fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary">
+                                    </td>
+                                    <td>
+                                        <a href="detail.html" class="text-primary hover:underline">服务协议-20230515.pdf</a>
+                                    </td>
+                                    <td>合同</td>
+                                    <td>客户A</td>
+                                    <td>2023-05-15 16:45</td>
+                                    <td>
+                                        <span class="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                            已通过
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="flex items-center gap-2">
+                                            <a href="detail.html" class="text-primary hover:underline">
+                                                <i class="fa fa-eye"></i>
+                                            </a>
+                                            <a href="edit.html" class="text-gray-500 hover:text-primary">
+                                                <i class="fa fa-edit"></i>
+                                            </a>
+                                            <a href="#" class="text-danger hover:underline">
+                                                <i class="fa fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary">
+                                    </td>
+                                    <td>
+                                        <a href="detail.html" class="text-primary hover:underline">费用报销单-20230530.xlsx</a>
+                                    </td>
+                                    <td>其他</td>
+                                    <td>客户B</td>
+                                    <td>2023-05-30 11:20</td>
+                                    <td>
+                                        <span class="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                                            待审核
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="flex items-center gap-2">
+                                            <a href="detail.html" class="text-primary hover:underline">
+                                                <i class="fa fa-eye"></i>
+                                            </a>
+                                            <a href="edit.html" class="text-gray-500 hover:text-primary">
+                                                <i class="fa fa-edit"></i>
+                                            </a>
+                                            <a href="#" class="text-danger hover:underline">
+                                                <i class="fa fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- 分页 -->
+                    <div class="flex items-center justify-between mt-6">
+                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                            显示 1-5 条，共 1248 条
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button class="btn btn-secondary btn-sm" disabled>
+                                <i class="fa fa-chevron-left"></i>
+                            </button>
+                            <button class="btn btn-primary btn-sm">1</button>
+                            <button class="btn btn-secondary btn-sm">2</button>
+                            <button class="btn btn-secondary btn-sm">3</button>
+                            <button class="btn btn-secondary btn-sm">...</button>
+                            <button class="btn btn-secondary btn-sm">250</button>
+                            <button class="btn btn-secondary btn-sm">
+                                <i class="fa fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 侧边栏切换
+        document.getElementById('sidebar-toggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        });
+
+        document.getElementById('sidebar-overlay').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        });
+
+        // 筛选展开/收起
+        document.getElementById('filter-toggle').addEventListener('click', function() {
+            const filterContent = document.getElementById('filter-content');
+            filterContent.classList.toggle('hidden');
+            const icon = this.querySelector('i');
+            if (icon) {
+                icon.classList.toggle('rotate-180');
+            }
+        });
+
+        // 侧边栏展开/折叠
+        document.querySelectorAll('nav button').forEach(button => {
+            button.addEventListener('click', function() {
+                const dropdown = this.nextElementSibling;
+                if (dropdown) {
+                    dropdown.classList.toggle('hidden');
+                    const icon = this.querySelector('.fa-chevron-down');
+                    if (icon) {
+                        icon.classList.toggle('rotate-180');
+                    }
+                }
+            });
+        });
+
+        // 批量操作按钮状态
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+                const deleteBtn = document.querySelector('button:has(.fa-trash)');
+                const editBtn = document.querySelector('button:has(.fa-edit)');
+                
+                if (checkboxes.length > 0) {
+                    deleteBtn.removeAttribute('disabled');
+                    editBtn.removeAttribute('disabled');
+                } else {
+                    deleteBtn.setAttribute('disabled', 'disabled');
+                    editBtn.setAttribute('disabled', 'disabled');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

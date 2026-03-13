@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>同步任务管理 - eDOC 管理系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#64748b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444',
+                        dark: '#1e293b',
+                        light: '#f8fafc'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .sidebar-active {
+                @apply bg-primary text-white;
+            }
+            .sidebar-item {
+                @apply flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700;
+            }
+            .sidebar-item.active {
+                @apply bg-primary text-white;
+            }
+            .card {
+                @apply bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 transition-all duration-300 hover:shadow-lg;
+            }
+            .btn {
+                @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+            }
+            .btn-primary {
+                @apply bg-primary text-white hover:bg-primary/90 focus:ring-primary;
+            }
+            .btn-secondary {
+                @apply bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 focus:ring-gray-400;
+            }
+            .btn-success {
+                @apply bg-success text-white hover:bg-success/90 focus:ring-success;
+            }
+            .btn-warning {
+                @apply bg-warning text-white hover:bg-warning/90 focus:ring-warning;
+            }
+            .btn-danger {
+                @apply bg-danger text-white hover:bg-danger/90 focus:ring-danger;
+            }
+            .input {
+                @apply w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent;
+            }
+            .table-container {
+                @apply overflow-x-auto;
+            }
+            .table {
+                @apply w-full min-w-full divide-y divide-gray-200 dark:divide-gray-700;
+            }
+            .table th {
+                @apply px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider bg-gray-50 dark:bg-gray-800;
+            }
+            .table td {
+                @apply px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100;
+            }
+            .table tr {
+                @apply bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white dark:bg-gray-800 shadow-sm z-10">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <button id="sidebar-toggle" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none lg:hidden">
+                    <i class="fa fa-bars text-xl"></i>
+                </button>
+                <h1 class="text-xl font-bold text-primary">eDOC 管理系统</h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="relative">
+                    <input type="text" placeholder="搜索..." class="input pl-10 pr-4 py-2 text-sm w-64">
+                    <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none relative">
+                        <i class="fa fa-bell text-xl"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">
+                            <i class="fa fa-user"></i>
+                        </div>
+                        <span class="hidden md:inline">管理员</span>
+                        <i class="fa fa-chevron-down text-xs text-gray-500 dark:text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex flex-1 overflow-hidden">
+        <!-- 侧边栏 -->
+        <aside id="sidebar" class="w-64 bg-white dark:bg-gray-800 shadow-md transform -translate-x-full lg:translate-x-0 fixed lg:relative top-0 left-0 h-full z-20 transition-transform duration-300 ease-in-out">
+            <div class="p-4 h-full flex flex-col">
+                <div class="flex items-center gap-2 mb-8">
+                    <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-white">
+                        <i class="fa fa-file-text-o text-xl"></i>
+                    </div>
+                    <h2 class="text-lg font-semibold">eDOC</h2>
+                </div>
+                <nav class="flex-1 space-y-1">
+                    <a href="../index.html" class="sidebar-item">
+                        <i class="fa fa-dashboard w-5 text-center"></i>
+                        <span>管理概览</span>
+                    </a>
+                    <div class="space-y-1">
+                        <button class="sidebar-item justify-between">
+                            <div class="flex items-center gap-3">
+                                <i class="fa fa-folder-open w-5 text-center"></i>
+                                <span>文档管理</span>
+                            </div>
+                            <i class="fa fa-chevron-down text-xs"></i>
+                        </button>
+                        <div class="pl-8 space-y-1 hidden">
+                            <a href="../documents/list.html" class="sidebar-item text-sm">
+                                <span>文档列表</span>
+                            </a>
+                            <a href="../documents/add.html" class="sidebar-item text-sm">
+                                <span>文档补录</span>
+                            </a>
+                            <a href="../documents/audit.html" class="sidebar-item text-sm">
+                                <span>文档审核</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <button class="sidebar-item justify-between">
+                            <div class="flex items-center gap-3">
+                                <i class="fa fa-users w-5 text-center"></i>
+                                <span>客户管理</span>
+                            </div>
+                            <i class="fa fa-chevron-down text-xs"></i>
+                        </button>
+                        <div class="pl-8 space-y-1 hidden">
+                            <a href="../customers/list.html" class="sidebar-item text-sm">
+                                <span>客户列表</span>
+                            </a>
+                            <a href="../customers/add.html" class="sidebar-item text-sm">
+                                <span>新建客户</span>
+                            </a>
+                            <a href="../customers/logs.html" class="sidebar-item text-sm">
+                                <span>客户操作日志</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <button class="sidebar-item justify-between active">
+                            <div class="flex items-center gap-3">
+                                <i class="fa fa-plug w-5 text-center"></i>
+                                <span>系统对接</span>
+                            </div>
+                            <i class="fa fa-chevron-down text-xs rotate-180"></i>
+                        </button>
+                        <div class="pl-8 space-y-1">
+                            <a href="configuration.html" class="sidebar-item text-sm">
+                                <span>对接系统配置</span>
+                            </a>
+                            <a href="tasks.html" class="sidebar-item text-sm active">
+                                <span>同步任务管理</span>
+                            </a>
+                            <a href="logs.html" class="sidebar-item text-sm">
+                                <span>接口日志监控</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <button class="sidebar-item justify-between">
+                            <div class="flex items-center gap-3">
+                                <i class="fa fa-bar-chart w-5 text-center"></i>
+                                <span>统计分析</span>
+                            </div>
+                            <i class="fa fa-chevron-down text-xs"></i>
+                        </button>
+                        <div class="pl-8 space-y-1 hidden">
+                            <a href="../analytics/dashboard.html" class="sidebar-item text-sm">
+                                <span>数据看板</span>
+                            </a>
+                            <a href="../analytics/reports.html" class="sidebar-item text-sm">
+                                <span>报表中心</span>
+                            </a>
+                            <a href="../analytics/hotspots.html" class="sidebar-item text-sm">
+                                <span>检索热点分析</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <button class="sidebar-item justify-between">
+                            <div class="flex items-center gap-3">
+                                <i class="fa fa-lock w-5 text-center"></i>
+                                <span>权限管理</span>
+                            </div>
+                            <i class="fa fa-chevron-down text-xs"></i>
+                        </button>
+                        <div class="pl-8 space-y-1 hidden">
+                            <a href="../permissions/roles.html" class="sidebar-item text-sm">
+                                <span>角色管理</span>
+                            </a>
+                            <a href="../permissions/users.html" class="sidebar-item text-sm">
+                                <span>用户管理</span>
+                            </a>
+                            <a href="../permissions/logs.html" class="sidebar-item text-sm">
+                                <span>操作日志</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <button class="sidebar-item justify-between">
+                            <div class="flex items-center gap-3">
+                                <i class="fa fa-cog w-5 text-center"></i>
+                                <span>系统设置</span>
+                            </div>
+                            <i class="fa fa-chevron-down text-xs"></i>
+                        </button>
+                        <div class="pl-8 space-y-1 hidden">
+                            <a href="../settings/basic.html" class="sidebar-item text-sm">
+                                <span>基础配置</span>
+                            </a>
+                            <a href="../settings/dictionary.html" class="sidebar-item text-sm">
+                                <span>字典管理</span>
+                            </a>
+                        </div>
+                    </div>
+                </nav>
+                <div class="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <a href="#" class="sidebar-item">
+                        <i class="fa fa-question-circle w-5 text-center"></i>
+                        <span>帮助中心</span>
+                    </a>
+                    <a href="#" class="sidebar-item">
+                        <i class="fa fa-sign-out w-5 text-center"></i>
+                        <span>退出登录</span>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 遮罩层 -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-10 lg:hidden hidden"></div>
+
+        <!-- 内容区 -->
+        <main class="flex-1 overflow-y-auto p-4 lg:p-6">
+            <div class="container mx-auto">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold">同步任务管理</h2>
+                    <div class="flex items-center gap-3">
+                        <button class="btn btn-primary" onclick="openAddTaskModal()">
+                            <i class="fa fa-plus mr-2"></i>新建同步任务
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 任务列表 -->
+                <div class="card">
+                    <div class="overflow-x-auto">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>任务名称</th>
+                                    <th>源系统</th>
+                                    <th>目标系统</th>
+                                    <th>任务类型</th>
+                                    <th>状态</th>
+                                    <th>下次执行</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>ERP文档同步</td>
+                                    <td>ERP系统</td>
+                                    <td>eDOC系统</td>
+                                    <td>定时同步</td>
+                                    <td>
+                                        <span class="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                            运行中
+                                        </span>
+                                    </td>
+                                    <td>2023-06-02 10:00</td>
+                                    <td>
+                                        <div class="flex items-center gap-2">
+                                            <button class="btn btn-secondary btn-sm" onclick="openEditTaskModal(1)">
+                                                <i class="fa fa-edit mr-1"></i>编辑
+                                            </button>
+                                            <button class="btn btn-danger btn-sm">
+                                                <i class="fa fa-stop mr-1"></i>停止
+                                            </button>
+                                            <button class="btn btn-primary btn-sm" onclick="viewTaskLogs(1)">
+                                                <i class="fa fa-history mr-1"></i>日志
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>CRM客户同步</td>
+                                    <td>CRM系统</td>
+                                    <td>eDOC系统</td>
+                                    <td>手动触发</td>
+                                    <td>
+                                        <span class="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                            已完成
+                                        </span>
+                                    </td>
+                                    <td>手动触发</td>
+                                    <td>
+                                        <div class="flex items-center gap-2">
+                                            <button class="btn btn-secondary btn-sm" onclick="openEditTaskModal(2)">
+                                                <i class="fa fa-edit mr-1"></i>编辑
+                                            </button>
+                                            <button class="btn btn-success btn-sm">
+                                                <i class="fa fa-play mr-1"></i>执行
+                                            </button>
+                                            <button class="btn btn-primary btn-sm" onclick="viewTaskLogs(2)">
+                                                <i class="fa fa-history mr-1"></i>日志
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>OA文档同步</td>
+                                    <td>OA系统</td>
+                                    <td>eDOC系统</td>
+                                    <td>定时同步</td>
+                                    <td>
+                                        <span class="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                            失败
+                                        </span>
+                                    </td>
+                                    <td>2023-06-02 11:00</td>
+                                    <td>
+                                        <div class="flex items-center gap-2">
+                                            <button class="btn btn-secondary btn-sm" onclick="openEditTaskModal(3)">
+                                                <i class="fa fa-edit mr-1"></i>编辑
+                                            </button>
+                                            <button class="btn btn-success btn-sm">
+                                                <i class="fa fa-play mr-1"></i>执行
+                                            </button>
+                                            <button class="btn btn-primary btn-sm" onclick="viewTaskLogs(3)">
+                                                <i class="fa fa-history mr-1"></i>日志
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 新建/编辑任务模态框 -->
+    <div id="task-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-2xl">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold" id="task-modal-title">新建同步任务</h3>
+                <button class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" onclick="closeModal('task-modal')">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">任务名称 <span class="text-danger">*</span></label>
+                    <input type="text" class="input" placeholder="请输入任务名称">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">源系统 <span class="text-danger">*</span></label>
+                    <select class="input">
+                        <option value="">请选择源系统</option>
+                        <option value="erp">ERP系统</option>
+                        <option value="crm">CRM系统</option>
+                        <option value="oa">OA系统</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">目标系统 <span class="text-danger">*</span></label>
+                    <select class="input">
+                        <option value="edoc">eDOC系统</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">任务类型 <span class="text-danger">*</span></label>
+                    <select class="input" id="task-type">
+                        <option value="定时同步">定时同步</option>
+                        <option value="手动触发">手动触发</option>
+                    </select>
+                </div>
+                <div id="schedule-container">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">执行计划 <span class="text-danger">*</span></label>
+                    <input type="datetime-local" class="input">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">同步内容 <span class="text-danger">*</span></label>
+                    <div class="space-y-2">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="sync-docs" class="rounded border-gray-300 text-primary focus:ring-primary" checked>
+                            <label for="sync-docs" class="ml-2 text-sm text-gray-700 dark:text-gray-300">文档</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="sync-customers" class="rounded border-gray-300 text-primary focus:ring-primary" checked>
+                            <label for="sync-customers" class="ml-2 text-sm text-gray-700 dark:text-gray-300">客户</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="sync-users" class="rounded border-gray-300 text-primary focus:ring-primary">
+                            <label for="sync-users" class="ml-2 text-sm text-gray-700 dark:text-gray-300">用户</label>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">备注</label>
+                    <textarea class="input h-24" placeholder="请输入备注信息"></textarea>
+                </div>
+            </div>
+            <div class="flex items-center justify-end gap-3 mt-6">
+                <button class="btn btn-secondary" onclick="closeModal('task-modal')">
+                    <i class="fa fa-times mr-2"></i>取消
+                </button>
+                <button class="btn btn-primary">
+                    <i class="fa fa-save mr-2"></i>保存
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 任务执行日志模态框 -->
+    <div id="task-logs-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-3xl">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold">任务执行日志</h3>
+                <button class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" onclick="closeModal('task-logs-modal')">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="overflow-y-auto max-h-96">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>执行时间</th>
+                            <th>状态</th>
+                            <th>执行结果</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>2023-06-01 10:00</td>
+                            <td>
+                                <span class="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                    成功
+                                </span>
+                            </td>
+                            <td>同步成功，共同步10条记录</td>
+                            <td>
+                                <button class="text-primary hover:underline" onclick="viewLogDetails(1)">
+                                    <i class="fa fa-eye"></i> 查看详情
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2023-05-31 10:00</td>
+                            <td>
+                                <span class="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                    成功
+                                </span>
+                            </td>
+                            <td>同步成功，共同步8条记录</td>
+                            <td>
+                                <button class="text-primary hover:underline" onclick="viewLogDetails(2)">
+                                    <i class="fa fa-eye"></i> 查看详情
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2023-05-30 10:00</td>
+                            <td>
+                                <span class="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                    失败
+                                </span>
+                            </td>
+                            <td>连接超时</td>
+                            <td>
+                                <button class="text-primary hover:underline" onclick="viewLogDetails(3)">
+                                    <i class="fa fa-eye"></i> 查看详情
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="flex items-center justify-end mt-4">
+                <button class="btn btn-secondary" onclick="closeModal('task-logs-modal')">
+                    <i class="fa fa-times mr-2"></i>关闭
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 侧边栏切换
+        document.getElementById('sidebar-toggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        });
+
+        document.getElementById('sidebar-overlay').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        });
+
+        // 打开新建任务模态框
+        function openAddTaskModal() {
+            document.getElementById('task-modal-title').textContent = '新建同步任务';
+            document.getElementById('task-modal').classList.remove('hidden');
+        }
+
+        // 打开编辑任务模态框
+        function openEditTaskModal(id) {
+            document.getElementById('task-modal-title').textContent = '编辑同步任务';
+            // 这里可以添加加载任务数据的逻辑
+            document.getElementById('task-modal').classList.remove('hidden');
+        }
+
+        // 关闭模态框
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        // 查看任务日志
+        function viewTaskLogs(id) {
+            document.getElementById('task-logs-modal').classList.remove('hidden');
+        }
+
+        // 查看日志详情
+        function viewLogDetails(id) {
+            alert('查看日志详情');
+        }
+
+        // 任务类型切换
+        document.getElementById('task-type').addEventListener('change', function() {
+            const scheduleContainer = document.getElementById('schedule-container');
+            if (this.value === '定时同步') {
+                scheduleContainer.classList.remove('hidden');
+            } else {
+                scheduleContainer.classList.add('hidden');
+            }
+        });
+
+        // 侧边栏展开/折叠
+        document.querySelectorAll('nav button').forEach(button => {
+            button.addEventListener('click', function() {
+                const dropdown = this.nextElementSibling;
+                if (dropdown) {
+                    dropdown.classList.toggle('hidden');
+                    const icon = this.querySelector('.fa-chevron-down');
+                    if (icon) {
+                        icon.classList.toggle('rotate-180');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
