@@ -1,0 +1,1634 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>施工现场 UN 号采集 App — 产品需求文档</title>
+<style>
+  :root{
+    --bg:#f4f1ea;
+    --paper:#ffffff;
+    --ink:#18211f;
+    --ink-2:#4b5754;
+    --ink-3:#7b8783;
+    --line:#ddd8cc;
+    --amber:#c56a11;
+    --amber-soft:#fdf0df;
+    --teal:#116b5f;
+    --teal-soft:#e3f1ee;
+    --danger:#a3342c;
+    --danger-soft:#fbe9e7;
+    --radius:14px;
+    --shadow:0 1px 2px rgba(24,33,31,.05),0 8px 24px rgba(24,33,31,.06);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 500px at 10% -10%, #fbf3e5 0%, transparent 60%),
+      var(--bg);
+    color:var(--ink);
+    font-family:"Segoe UI","Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif;
+    line-height:1.75;
+    font-size:15px;
+  }
+  a{color:var(--teal);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .hero{
+    background:#16211f;
+    color:#f5f1e8;
+    padding:56px 24px 44px;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero::after{
+    content:"";
+    position:absolute;
+    left:0;right:0;bottom:0;
+    height:8px;
+    background:repeating-linear-gradient(135deg,#d97706 0 18px,#16211f 18px 36px);
+    opacity:.85;
+  }
+  .hero-inner{max-width:1180px;margin:0 auto;position:relative;z-index:1}
+  .kicker{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+    color:#f3c88b;
+    border:1px solid rgba(243,200,139,.4);
+    padding:5px 10px;border-radius:999px;
+  }
+  .hero h1{
+    font-size:clamp(28px,4vw,46px);
+    line-height:1.2;margin:20px 0 12px;font-weight:700;letter-spacing:-.01em;
+  }
+  .hero .sub{max-width:760px;color:#c9d2cd;font-size:16px;margin:0}
+  .meta{
+    display:flex;flex-wrap:wrap;gap:10px 22px;
+    margin-top:26px;padding-top:18px;border-top:1px solid rgba(255,255,255,.14);
+    font-size:13px;color:#aab6b0;
+  }
+  .meta span strong{color:#f1ece0;font-weight:600}
+  .doc{
+    max-width:1180px;margin:0 auto;padding:38px 24px 80px;
+    display:grid;grid-template-columns:220px minmax(0,1fr);gap:42px;
+    align-items:start;
+  }
+  .toc{
+    position:sticky;top:20px;
+    background:rgba(255,255,255,.72);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:18px 16px;
+    backdrop-filter:blur(6px);
+  }
+  .toc h2{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);margin:0 0 12px}
+  .toc ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+  .toc a{
+    display:block;padding:6px 8px;border-radius:8px;color:var(--ink-2);
+    font-size:13px;line-height:1.45;
+  }
+  .toc a:hover{background:var(--amber-soft);color:var(--amber);text-decoration:none}
+  .content{min-width:0}
+  section{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:30px 34px;
+    margin-bottom:26px;
+    box-shadow:var(--shadow);
+  }
+  .sec-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:18px}
+  .sec-no{
+    flex:none;width:36px;height:36px;border-radius:10px;
+    background:var(--ink);color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:14px;font-weight:700;margin-top:3px;
+  }
+  .sec-head h2{margin:0;font-size:22px;line-height:1.35;letter-spacing:-.01em}
+  .sec-head p{margin:4px 0 0;color:var(--ink-3);font-size:13px}
+  h3{font-size:17px;margin:26px 0 10px;color:var(--ink)}
+  h4{font-size:14.5px;margin:20px 0 8px;color:var(--ink)}
+  p{margin:8px 0;color:var(--ink-2)}
+  .lead{font-size:15.5px;color:var(--ink-2)}
+  .callout{
+    border-left:3px solid var(--amber);
+    background:var(--amber-soft);
+    padding:12px 16px;border-radius:0 10px 10px 0;margin:16px 0;
+    color:#5b3a13;font-size:14px;
+  }
+  .callout.teal{border-color:var(--teal);background:var(--teal-soft);color:#0d4b43}
+  .callout.danger{border-color:var(--danger);background:var(--danger-soft);color:#6f211b}
+  .tag{
+    display:inline-block;font-size:11px;line-height:1.6;padding:1px 8px;border-radius:999px;
+    background:var(--teal-soft);color:var(--teal);font-weight:600;vertical-align:1px;
+    margin-left:6px;
+  }
+  .tag.p1{background:#ece9f7;color:#54418c}
+  .tag.tbd{background:#f1eee6;color:#7a6b4b}
+  table{
+    width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px;
+    border:1px solid var(--line);border-radius:10px;overflow:hidden;
+  }
+  th,td{padding:10px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+  th{background:#f7f4ec;font-weight:600;color:var(--ink);font-size:12.5px}
+  tr:last-child td{border-bottom:none}
+  td{color:var(--ink-2)}
+  .mono{font-family:"Cascadia Code","Consolas",monospace;font-size:12.5px;color:var(--ink)}
+  .flow{
+    display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:16px 0;
+    font-size:13px;
+  }
+  .flow .step{
+    background:#f7f4ec;border:1px solid var(--line);border-radius:10px;
+    padding:8px 12px;color:var(--ink);
+  }
+  .flow .step.hot{background:var(--amber-soft);border-color:#e8c797;color:#6b3f0e}
+  .flow .arr{color:var(--ink-3);font-weight:700}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .card{
+    background:#fbfaf6;border:1px solid var(--line);border-radius:11px;padding:14px 16px;
+  }
+  .card h4{margin:0 0 6px}
+  .card p{margin:0;font-size:13px}
+  .bullet-list{margin:8px 0 0;padding-left:20px;color:var(--ink-2)}
+  .bullet-list li{margin:5px 0}
+  .fr{
+    border:1px solid var(--line);border-radius:12px;margin:18px 0;overflow:hidden;
+  }
+  .fr-head{
+    display:flex;align-items:center;gap:12px;
+    background:#f8f5ee;padding:12px 16px;border-bottom:1px solid var(--line);
+  }
+  .fr-id{
+    font-family:"Cascadia Code","Consolas",monospace;
+    font-size:12px;font-weight:700;color:#fff;background:var(--ink);
+    padding:2px 8px;border-radius:6px;flex:none;
+  }
+  .fr-head h3{margin:0;font-size:16px}
+  .fr-body{padding:14px 18px 18px}
+  .fr-kv{display:grid;grid-template-columns:96px 1fr;gap:6px 14px;font-size:13.5px}
+  .fr-kv .k{color:var(--ink-3);font-size:12.5px;padding-top:2px}
+  .fr-kv .v{color:var(--ink-2)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+  .chip{
+    font-size:11.5px;padding:2px 9px;border-radius:999px;background:#f1eee5;color:#5d5748;
+    border:1px solid #e5dfd2;
+  }
+  .open-list{counter-reset:q;list-style:none;margin:0;padding:0;display:grid;gap:10px}
+  .open-list li{
+    counter-increment:q;background:#fbfaf6;border:1px solid var(--line);
+    border-radius:10px;padding:12px 16px;
+  }
+  .open-list li::before{
+    content:"Q-" counter(q,decimal-leading-zero);
+    font-family:"Cascadia Code","Consolas",monospace;font-size:11px;font-weight:700;
+    color:#fff;background:var(--amber);padding:1px 7px;border-radius:5px;margin-right:9px;
+  }
+  footer{max-width:1180px;margin:0 auto;padding:0 24px 60px;color:var(--ink-3);font-size:12.5px}
+  /* ---- demo ---- */
+  .demo-wrap{
+    display:grid;grid-template-columns:minmax(300px,380px) minmax(0,1fr);gap:24px;
+    align-items:start;margin:18px 0 4px;
+  }
+  .demo-stage{
+    background:#202b28;border-radius:22px;padding:14px;
+    position:sticky;top:16px;
+  }
+  .demo-toolbar{
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+    color:#cad4cf;font-size:11.5px;padding:2px 4px 10px;
+  }
+  .net-toggle{
+    border:1px solid #485652;background:#2a3531;color:#dfe7e2;
+    font:inherit;font-size:11px;border-radius:999px;padding:3px 9px;cursor:pointer;
+  }
+  .net-toggle.off{background:#5b2a24;border-color:#7c3b32;color:#ffdcd6}
+  .phone{
+    background:#fdfcf8;border-radius:18px;height:590px;overflow:hidden;
+    display:flex;flex-direction:column;position:relative;
+  }
+  .phone-status{
+    height:26px;flex:none;display:flex;align-items:center;justify-content:space-between;
+    padding:0 14px;font-size:10px;color:#5d6965;background:#f4f1e8;
+  }
+  .phone-body{flex:1;overflow-y:auto;padding:14px 14px 18px;position:relative}
+  .screen{display:none}
+  .screen.active{display:block;animation:fade .18s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .app-title{font-size:18px;font-weight:700;margin:2px 0 4px}
+  .app-sub{font-size:11.5px;color:var(--ink-3);margin:0 0 12px}
+  .big-action{
+    display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+    border:1px solid #e3ddcf;background:#fff;border-radius:13px;padding:13px 14px;
+    margin:9px 0;cursor:pointer;font:inherit;color:var(--ink);
+  }
+  .big-action:hover{border-color:#d8b386;background:#fffaf3}
+  .act-icon{
+    width:38px;height:38px;flex:none;border-radius:10px;display:flex;align-items:center;justify-content:center;
+    font-size:17px;background:var(--teal-soft);color:var(--teal);
+  }
+  .act-icon.amber{background:var(--amber-soft);color:var(--amber)}
+  .big-action b{display:block;font-size:14px;margin-bottom:1px}
+  .big-action small{display:block;color:var(--ink-3);font-size:11px;line-height:1.4}
+  .sync-card{
+    background:#26322e;color:#e8efeb;border-radius:12px;padding:11px 13px;margin:6px 0 12px;
+    display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:11.5px;
+  }
+  .sync-card b{font-size:18px;display:block;line-height:1.2;color:#ffd9a6}
+  .mini-link{border:0;background:transparent;color:#ffd9a6;font:inherit;font-size:11px;cursor:pointer}
+  .recent-title{display:flex;justify-content:space-between;align-items:center;margin:16px 0 6px;font-size:12px;font-weight:700}
+  .record-row{
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+    border-bottom:1px solid #eee8db;padding:8px 2px;font-size:11.5px;
+  }
+  .record-row b{font-family:"Cascadia Code","Consolas",monospace;font-size:12px}
+  .status-chip{font-size:10px;padding:1px 7px;border-radius:999px;background:#f1eee5;color:#6d6553;white-space:nowrap}
+  .status-chip.ok{background:#e4f2e9;color:#256b44}
+  .status-chip.wait{background:#fdf0df;color:#95531a}
+  .status-chip.review{background:#f3ecda;color:#7a5b1e}
+  .status-chip.fail{background:#fbe5e2;color:#8c2c23}
+  .back{
+    border:0;background:transparent;color:var(--ink-2);font:inherit;font-size:12px;
+    padding:0;margin-bottom:8px;cursor:pointer;
+  }
+  .scan-box{
+    height:190px;border-radius:14px;margin:8px 0 12px;
+    background:
+      linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,0)),
+      repeating-linear-gradient(45deg,#2c3633 0 10px,#25302c 10px 20px);
+    border:1px solid #394440;position:relative;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .scan-frame{
+    width:118px;height:118px;border:2px solid #f0b35f;border-radius:10px;position:relative;
+  }
+  .scan-frame::after{
+    content:"";position:absolute;left:10%;right:10%;top:50%;height:2px;background:#f0b35f;
+    box-shadow:0 0 10px #f0b35f;animation:sweep 2.2s infinite ease-in-out;
+  }
+  @keyframes sweep{0%,100%{transform:translateY(-35px)}50%{transform:translateY(35px)}}
+  .scan-hint{position:absolute;bottom:8px;left:0;right:0;text-align:center;color:#d9dfdb;font-size:10px}
+  .btn-primary{
+    width:100%;border:0;border-radius:11px;background:var(--amber);color:#fff;
+    padding:12px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;
+  }
+  .btn-primary:hover{filter:brightness(.95)}
+  .btn-primary:disabled{background:#c9c1b3;cursor:not-allowed}
+  .btn-ghost{
+    width:100%;border:1px solid #ddd5c6;border-radius:11px;background:#fff;color:var(--ink-2);
+    padding:10px;font:inherit;font-size:12px;cursor:pointer;margin-top:8px;
+  }
+  .field-label{font-size:11px;color:var(--ink-3);margin:10px 0 4px;display:flex;justify-content:space-between}
+  .field-label em{font-style:normal;color:var(--danger);font-size:10px}
+  .input{
+    width:100%;border:1px solid #ddd5c6;border-radius:9px;background:#fff;
+    padding:9px 10px;font:inherit;font-size:13px;color:var(--ink);outline:none;
+  }
+  .input:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(197,106,17,.12)}
+  .seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px}
+  .seg button{
+    border:1px solid #ddd5c6;background:#fff;border-radius:9px;padding:8px 4px;
+    font:inherit;font-size:11.5px;color:var(--ink-2);cursor:pointer;line-height:1.35;
+  }
+  .seg button.sel{background:var(--amber-soft);border-color:#e2b77f;color:#7a4510;font-weight:700}
+  .photo-box{
+    margin-top:6px;border:1px dashed #cfc6b6;border-radius:10px;background:#fbfaf6;
+    padding:14px;text-align:center;font-size:11px;color:var(--ink-3);cursor:pointer;
+  }
+  .photo-box.has{border-style:solid;background:#eef2ec;color:#315a41}
+  .form-error{display:none;color:var(--danger);background:var(--danger-soft);border-radius:8px;padding:7px 9px;font-size:11px;margin-top:9px}
+  .form-error.show{display:block}
+  .hint-line{font-size:10.5px;color:var(--ink-3);margin-top:8px;line-height:1.5}
+  .tabs{display:flex;gap:4px;border-bottom:1px solid #e7e1d5;margin-bottom:8px}
+  .tabs button{
+    flex:1;border:0;background:transparent;font:inherit;font-size:11.5px;color:var(--ink-3);
+    padding:7px 2px;border-bottom:2px solid transparent;cursor:pointer;
+  }
+  .tabs button.on{color:var(--amber);border-bottom-color:var(--amber);font-weight:700}
+  .empty{
+    border:1px dashed #ddd5c6;border-radius:10px;padding:24px 12px;text-align:center;
+    color:var(--ink-3);font-size:11.5px;margin:12px 0;background:#fbfaf6;
+  }
+  .demo-notes{min-width:0}
+  .demo-notes .note-card{
+    background:#fbfaf6;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:12px;
+  }
+  .demo-notes h4{margin:0 0 6px}
+  .demo-notes p,.demo-notes li{font-size:13px;color:var(--ink-2)}
+  .demo-notes ul{margin:6px 0 0;padding-left:18px}
+  .demo-legend{display:grid;gap:6px;font-size:12px;color:var(--ink-2)}
+  .legend-row{display:flex;gap:8px;align-items:flex-start}
+  .legend-dot{width:7px;height:7px;border-radius:50%;background:var(--amber);margin-top:6px;flex:none}
+  @media(max-width:1000px){
+    .doc{grid-template-columns:1fr;gap:24px}
+    .toc{position:static;display:none}
+    .demo-wrap{grid-template-columns:1fr}
+    .demo-stage{position:static}
+    .grid2{grid-template-columns:1fr}
+  }
+  @media(max-width:620px){
+    section{padding:22px 18px}
+    .hero{padding:38px 18px 34px}
+    .fr-kv{grid-template-columns:1fr;gap:2px}
+    .fr-kv .k{margin-top:8px}
+    table{font-size:12.5px;display:block;overflow-x:auto;white-space:nowrap}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="kicker">Product Requirements Document</div>
+    <h1>施工现场 UN 号采集 App</h1>
+    <p class="sub">面向施工现场员工的移动端采集工具：通过扫码、拍照或手动录入收集包装上的 UN 号，离线可用，并与 eCoA 完成数据同步。</p>
+    <div class="meta">
+      <span><strong>版本</strong> v0.1</span>
+      <span><strong>状态</strong> 待评审</span>
+      <span><strong>日期</strong> 2026-11-02</span>
+      <span><strong>依据</strong> requirement/plan.md</span>
+      <span><strong>范围</strong> Android · P0 扫码闭环 / P1 拍照识别</span>
+    </div>
+  </div>
+</header>
+
+<main class="doc">
+  <aside class="toc">
+    <h2>目录</h2>
+    <ul>
+      <li><a href="#s1">01 背景与目标</a></li>
+      <li><a href="#s2">02 范围与角色</a></li>
+      <li><a href="#s3">03 产品模型与状态</a></li>
+      <li><a href="#s4">04 交互原型</a></li>
+      <li><a href="#s5">05 功能需求</a></li>
+      <li><a href="#s6">06 共享规则与异常</a></li>
+      <li><a href="#s7">07 待确认事项</a></li>
+    </ul>
+  </aside>
+
+  <div class="content">
+
+    <section id="s1">
+      <div class="sec-head">
+        <div class="sec-no">01</div>
+        <div>
+          <h2>背景与目标</h2>
+          <p>为什么做、为谁做、做到什么程度算完成</p>
+        </div>
+      </div>
+
+      <h3>1.1 背景与问题</h3>
+      <p>施工现场的员工需要记录桶、纸箱等包装上的 UN 号。这些信息通常写在标签上，员工在搬运、暂存或交接环节手工抄录，存在三个直接问题：</p>
+      <ul class="bullet-list">
+        <li>抄录慢，标签磨损或光线不佳时容易看错、写错；</li>
+        <li>现场网络不稳定，依赖在线系统的工具在断网时无法使用；</li>
+        <li>记录分散在纸面或个人设备中，回到后台需要二次录入，难以追溯是谁、在什么时间、用哪台设备采集。</li>
+      </ul>
+      <p>产品回应是：把采集动作放到员工手机上。扫码或拍照即可带入 UN 号，人工只需确认类型、数量和照片；数据先落本地，网络恢复后同步到 eCoA。</p>
+
+      <div class="callout teal">
+        <strong>产品判断：</strong>现场作业的第一优先级是“能采、采得完”，而不是“实时在线”。因此本地保存是主路径，上传是后续动作，任何网络问题都不应阻断采集。
+      </div>
+
+      <h3>1.2 产品目标</h3>
+      <p>目标以可观察的产品行为描述，不设未经确认的量化指标：</p>
+      <ul class="bullet-list">
+        <li>员工登录后，从主页完成一条扫码采集，正常路径不超过 4 次主要交互；</li>
+        <li>扫码或识别失败时，员工无需退出当前流程即可转入手动录入；</li>
+        <li>断网时仍可完成采集、查看本机记录，恢复网络后可补传且不产生重复记录；</li>
+        <li>保存前能够拦截不存在、已过期、可用数量不足的 UN 号；离线时给出“待复核”结论并保留数据；</li>
+        <li>每条记录都能追溯识别原值、是否人工改动、采集账号、时间、Android ID 与照片。</li>
+      </ul>
+
+      <h3>1.3 术语</h3>
+      <table>
+        <thead><tr><th>术语</th><th>定义</th></tr></thead>
+        <tbody>
+          <tr><td><b>UN 号</b></td><td>包装上标识危险货物联合国编号的编码，格式为 <span class="mono">UN</span> + 4 位数字，例如 <span class="mono">UN1234</span>。</td></tr>
+          <tr><td><b>采集记录</b></td><td>一次现场采集形成的数据单元，包含类型、UN 号、数量、照片及追溯信息。</td></tr>
+          <tr><td><b>UN 主数据</b></td><td>eCoA 中维护的 UN 号清单及其有效期、可用数量，是保存校验的依据。</td></tr>
+          <tr><td><b>待复核</b></td><td>离线或主数据不可用时，本地校验通过但尚未经服务端确认的记录状态。</td></tr>
+          <tr><td><b>人工改动</b></td><td>最终 UN 号与扫码/OCR 识别原值不一致，或全程由员工手动输入。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="s2">
+      <div class="sec-head">
+        <div class="sec-no">02</div>
+        <div>
+          <h2>范围与角色</h2>
+          <p>最小完整旅程、参与角色与本期边界</p>
+        </div>
+      </div>
+
+      <h3>2.1 目标用户</h3>
+      <div class="grid2">
+        <div class="card">
+          <h4>现场采集员 <span class="tag">主要用户</span></h4>
+          <p>在施工现场使用手机采集 UN 号。可能在戴手套、光线不足、网络不稳定的条件下操作，需要大按钮、少输入、就地提示。</p>
+        </div>
+        <div class="card">
+          <h4>eCoA 管理员 <span class="tag">后台角色</span></h4>
+          <p>在 eCoA 中开通、停用 App 账号，维护 UN 主数据。管理员不在 App 内操作，App 只承接其配置结果。</p>
+        </div>
+      </div>
+
+      <h3>2.2 最小完整旅程（P0）</h3>
+      <p>P0 以“扫码采集一条记录并成功上传”为闭环，手动录入作为识别失败的恢复路径：</p>
+      <div class="flow">
+        <span class="step">登录</span><span class="arr">→</span>
+        <span class="step hot">扫码 / 手动录入</span><span class="arr">→</span>
+        <span class="step">确认类型、数量、照片</span><span class="arr">→</span>
+        <span class="step">保存本地</span><span class="arr">→</span>
+        <span class="step hot">上传 eCoA</span><span class="arr">→</span>
+        <span class="step">已上传</span>
+      </div>
+      <p>完成证据：记录出现在本机列表中，状态为“已上传”，并在 eCoA 中可查询到对应记录与照片。</p>
+      <p>最重要失败路径：现场断网或 eCoA 不可用。产品必须允许保存为“待上传”，网络恢复后自动补传；员工不需要重新采集。</p>
+
+      <h3>2.3 范围边界</h3>
+      <table>
+        <thead><tr><th>范围</th><th>内容</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><b>P0</b></td>
+            <td>账号登录、扫码采集、手动录入、采集确认与保存、本地记录、上传与重试、服务器数据拉取与展示、关于我们</td>
+            <td>构成完整闭环，方案 A 的最小交付范围</td>
+          </tr>
+          <tr>
+            <td><b>P1</b></td>
+            <td>拍照采集 + OCR 识别 UN 号、候选选择与人工修正</td>
+            <td>方案 B 增量能力；依赖现场标签样本与识别调优</td>
+          </tr>
+          <tr>
+            <td><b>不包含</b></td>
+            <td>App 自助注册、eCoA 网页端采集、库存扣减管理、硬件采购、iOS 版本</td>
+            <td>如后续需要，另行评估；本期默认 Android 单端</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>2.4 角色与权限</h3>
+      <table>
+        <thead><tr><th>能力</th><th>现场采集员（App）</th><th>eCoA 管理员（后台）</th></tr></thead>
+        <tbody>
+          <tr><td>登录 App</td><td>是，仅限 App</td><td>否</td></tr>
+          <tr><td>登录 eCoA 网页</td><td>否</td><td>是</td></tr>
+          <tr><td>采集、编辑本机待上传记录</td><td>是</td><td>否</td></tr>
+          <tr><td>删除本机待上传记录</td><td>是，需二次确认</td><td>否</td></tr>
+          <tr><td>上传本机记录</td><td>是</td><td>否</td></tr>
+          <tr><td>拉取并查看服务器记录</td><td>是，范围见 Q-08</td><td>是</td></tr>
+          <tr><td>开通 / 停用 App 账号</td><td>否</td><td>是</td></tr>
+          <tr><td>维护 UN 主数据</td><td>否</td><td>是</td></tr>
+        </tbody>
+      </table>
+      <div class="callout">
+        <strong>[Assumption, TBD]</strong> App 采集员默认只能查看和操作本账号采集的本机记录；服务器记录默认只拉取本账号相关记录。是否允许查看全站点数据，需在 Q-08 确认。
+      </div>
+
+      <h3>2.5 账号规则</h3>
+      <ul class="bullet-list">
+        <li>账号与密码由 eCoA 管理员提前维护，App 不提供公开注册入口；菜单中的“注册”改为“账号申请说明”。</li>
+        <li>App 采集员角色不能登录 eCoA 网页；该角色被停用后，App 端下次请求即失效。</li>
+        <li>首次登录必须联网；登录成功后可在配置的离线宽限期内离线使用，超过宽限期需重新联网登录。</li>
+        <li>密码不在 App 本地明文保存；忘记密码由管理员重置。</li>
+      </ul>
+    </section>
+
+    <section id="s3">
+      <div class="sec-head">
+        <div class="sec-no">03</div>
+        <div>
+          <h2>产品模型与状态</h2>
+          <p>采集记录是什么、由谁拥有、会经历哪些状态</p>
+        </div>
+      </div>
+
+      <h3>3.1 核心对象：采集记录</h3>
+      <p>采集记录是系统的最小业务单元。一次扫码、一次拍照或一次手动录入，最终形成一条记录。所有界面、校验、同步和追溯都围绕这条记录展开。</p>
+      <table>
+        <thead><tr><th>字段</th><th>类型 1：含 UN 号的桶或纸箱</th><th>类型 2：有限数量纸箱</th><th>规则</th></tr></thead>
+        <tbody>
+          <tr><td><b>记录编号</b></td><td>自动生成</td><td>自动生成</td><td>App 内唯一，用于展示与去重；不可编辑</td></tr>
+          <tr><td><b>类型</b></td><td>必填</td><td>必填</td><td>二选一；新建时默认沿用上次选择，首次默认类型 1</td></tr>
+          <tr><td><b>UN 号</b></td><td>必填</td><td>必填 <span class="tag tbd">待确认</span></td><td>扫码/OCR 自动填入，可手输；保存前统一格式；类型 2 是否必填见 Q-02</td></tr>
+          <tr><td><b>识别原值</b></td><td>自动</td><td>自动</td><td>扫码/OCR 的原始结果；手动录入为空；仅详情可见</td></tr>
+          <tr><td><b>人工改动</b></td><td>自动</td><td>自动</td><td>无 / 识别后修改 / 全程手动；用于分析识别质量</td></tr>
+          <tr><td><b>数量</b></td><td>固定为 1，不展示输入框</td><td>必填</td><td>正整数；仅类型 2 可编辑</td></tr>
+          <tr><td><b>照片</b></td><td>必填</td><td>必填</td><td>方案 B 用于识别；方案 A 是否保留见 Q-03</td></tr>
+          <tr><td><b>采集账号</b></td><td>自动</td><td>自动</td><td>当前登录账号，不可编辑</td></tr>
+          <tr><td><b>Android ID</b></td><td>自动</td><td>自动</td><td>隐藏获取，不在表单主区域展示；详情可见</td></tr>
+          <tr><td><b>采集时间</b></td><td>自动</td><td>自动</td><td>设备本地时间，随记录上传时区</td></tr>
+          <tr><td><b>校验结论</b></td><td>自动</td><td>自动</td><td>本地待复核 / 待服务端确认 / 通过 / 不通过</td></tr>
+          <tr><td><b>校验说明</b></td><td>自动</td><td>自动</td><td>失败原因：不存在、已过期、数量不足等</td></tr>
+          <tr><td><b>同步状态</b></td><td>自动</td><td>自动</td><td>待上传 / 上传中 / 已上传 / 上传失败</td></tr>
+          <tr><td><b>数据来源</b></td><td>自动</td><td>自动</td><td>本机 / 服务器；服务器记录只读</td></tr>
+        </tbody>
+      </table>
+
+      <h3>3.2 UN 主数据</h3>
+      <p>保存校验依赖 eCoA 下发的 UN 主数据快照。App 侧只读，不提供维护入口。</p>
+      <table>
+        <thead><tr><th>字段</th><th>用途</th><th>缺失时的行为</th></tr></thead>
+        <tbody>
+          <tr><td>UN 号</td><td>与记录中的 UN 号匹配</td><td>视为“无法判断”，允许保存并标记待复核</td></tr>
+          <tr><td>有效期</td><td>判断是否过期</td><td>视为“无法判断”，标记待复核</td></tr>
+          <tr><td>可用数量</td><td>类型 2 数量校验</td><td>视为“无法判断”，标记待复核</td></tr>
+          <tr><td>主数据版本与更新时间</td><td>判断快照是否过期</td><td>展示版本时间，提示可能不准确</td></tr>
+        </tbody>
+      </table>
+
+      <h3>3.3 记录状态</h3>
+      <p>记录状态由两个维度组成，界面展示时合并为一个状态标签，避免员工理解成本：</p>
+      <table>
+        <thead><tr><th>同步状态</th><th>校验结论</th><th>界面标签</th><th>含义</th><th>允许的操作</th></tr></thead>
+        <tbody>
+          <tr><td>待上传</td><td>本地待复核</td><td><span class="status-chip review">待复核</span></td><td>离线或主数据不可用，本地校验暂定通过</td><td>编辑、删除、上传</td></tr>
+          <tr><td>待上传</td><td>待服务端确认</td><td><span class="status-chip wait">待上传</span></td><td>本地校验通过，等待上传后由服务端确认</td><td>编辑、删除、上传</td></tr>
+          <tr><td>上传中</td><td>保持不变</td><td><span class="status-chip wait">上传中</span></td><td>正在提交记录或照片</td><td>不可编辑，可取消</td></tr>
+          <tr><td>已上传</td><td>通过</td><td><span class="status-chip ok">已上传</span></td><td>服务端接受且校验通过</td><td>查看详情</td></tr>
+          <tr><td>已上传</td><td>不通过</td><td><span class="status-chip fail">校验失败</span></td><td>上传后被服务端判定无效</td><td>查看原因、编辑后重新上传</td></tr>
+          <tr><td>上传失败</td><td>保持不变</td><td><span class="status-chip fail">上传失败</span></td><td>网络或服务异常，记录仍在本地</td><td>重试、编辑、删除</td></tr>
+        </tbody>
+      </table>
+
+      <h4>状态流转</h4>
+      <div class="flow">
+        <span class="step">保存本地</span><span class="arr">→</span>
+        <span class="step">待上传 / 待复核</span><span class="arr">→</span>
+        <span class="step">上传中</span><span class="arr">→</span>
+        <span class="step hot">已上传</span>
+      </div>
+      <p>上传中若网络中断或服务异常，退回“上传失败”，保留校验结论；重试成功后进入“已上传”。服务端判定不通过时进入“校验失败”，员工可修改后重新上传。已上传记录不提供编辑与删除。</p>
+
+      <h3>3.4 数据归属与可见范围</h3>
+      <ul class="bullet-list">
+        <li>本机记录：由当前账号在当前设备采集，保存在本地，可在本机列表查看和编辑；离开账号或换设备后不自动出现。</li>
+        <li>服务器记录：已上传到 eCoA 的记录，经“获取数据”拉取后在本机展示，只读。</li>
+        <li>服务器记录与本机记录按记录编号合并，同一记录不重复展示；已上传的本机记录以服务器版本为准。</li>
+        <li>拉取范围默认仅本账号相关记录，最终范围见 Q-08。</li>
+      </ul>
+
+      <div class="callout">
+        <strong>关键判断：</strong>“保存”和“上传”是两个独立动作。保存只要求本地校验通过或可标记待复核；上传才触发服务端最终校验。这样断网不会阻断现场作业，同时保留服务端的权威性。
+      </div>
+    </section>
+
+    <section id="s4">
+      <div class="sec-head">
+        <div class="sec-no">04</div>
+        <div>
+          <h2>交互原型：P0 采集闭环</h2>
+          <p>可点击的界面演示；右侧标注对应的功能需求编号</p>
+        </div>
+      </div>
+
+      <p class="lead">原型覆盖“登录 → 扫码 → 确认表单 → 保存 → 上传 → 拉取”的主路径，也包含断网、校验失败、空列表等异常状态。演示数据为模拟值，不代表最终业务数据。</p>
+
+      <style>
+        .toast{
+          position:absolute;left:14px;right:14px;bottom:14px;z-index:9;
+          background:#26322e;color:#fff;border-radius:10px;padding:9px 12px;
+          font-size:11.5px;line-height:1.5;opacity:0;transform:translateY(6px);
+          transition:.22s;pointer-events:none;box-shadow:0 8px 20px rgba(0,0,0,.18);
+        }
+        .toast.show{opacity:1;transform:none}
+        .detail-line{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #eee8db;padding:6px 0;font-size:11.5px}
+        .detail-line span:first-child{color:var(--ink-3);flex:none}
+        .detail-line span:last-child{text-align:right;color:var(--ink);word-break:break-all}
+        .nav-row{display:flex;gap:6px;margin-top:10px}
+        .nav-row button{flex:1;border:1px solid #e0d9ca;background:#fff;border-radius:9px;padding:7px 2px;font:inherit;font-size:10.5px;color:var(--ink-2);cursor:pointer}
+        .upload-row{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:7px 0;border-bottom:1px solid #eee8db;font-size:11px}
+        .upload-row small{display:block;color:var(--ink-3);font-size:9.5px;line-height:1.4}
+        .pull-msg{font-size:11.5px;color:var(--teal);background:var(--teal-soft);border-radius:8px;padding:7px 9px;margin:8px 0;display:none}
+        .pull-msg.show{display:block}
+        .pull-msg.err{color:var(--danger);background:var(--danger-soft)}
+        .p1-label{font-size:9.5px;color:#6b5a95;background:#ece9f7;border-radius:4px;padding:0 4px;margin-left:4px}
+      </style>
+
+      <div class="demo-wrap">
+        <div class="demo-stage">
+          <div class="demo-toolbar">
+            <span>交互原型 · 可点击</span>
+            <button id="netBtn" class="net-toggle" onclick="toggleNet()">网络：在线</button>
+          </div>
+          <div class="phone">
+            <div class="phone-status">
+              <span>9:41</span>
+              <span id="phoneNet">4G</span>
+            </div>
+            <div class="phone-body">
+
+              <div class="screen active" id="screen-login">
+                <div class="app-title">UN 现场采集</div>
+                <p class="app-sub">账号由管理员在 eCoA 中开通</p>
+                <div class="field-label">账号</div>
+                <input class="input" id="loginAccount" value="clerk01" autocomplete="off">
+                <div class="field-label">密码</div>
+                <input class="input" id="loginPwd" type="password" value="demo1234">
+                <div class="form-error" id="loginError">请输入账号和密码</div>
+                <div style="height:12px"></div>
+                <button class="btn-primary" onclick="login()">登录</button>
+                <div class="hint-line">没有账号？账号由现场管理员开通，请联系现场负责人。App 不开放自助注册。</div>
+              </div>
+
+              <div class="screen" id="screen-home">
+                <div class="app-title">现场采集</div>
+                <p class="app-sub">已登录：<span id="homeUser">clerk01</span></p>
+                <div class="sync-card">
+                  <div><b id="pendingCount">0</b>条待上传</div>
+                  <button class="mini-link" onclick="go('upload')">去上传 →</button>
+                </div>
+                <button class="big-action" onclick="go('scan')">
+                  <span class="act-icon amber">⌗</span>
+                  <span><b>二维码扫描</b><small>标签清晰时优先使用</small></span>
+                </button>
+                <button class="big-action" onclick="photoEntry()">
+                  <span class="act-icon">▣</span>
+                  <span><b>拍照采集 <span class="p1-label">方案 B</span></b><small>标签磨损或二维码损坏时使用</small></span>
+                </button>
+                <button class="big-action" onclick="goForm('manual')">
+                  <span class="act-icon">⌨</span>
+                  <span><b>手动录入</b><small>扫码失败时直接输入 UN 号</small></span>
+                </button>
+                <div class="recent-title"><span>最近记录</span><button class="mini-link" style="color:var(--teal)" onclick="go('records')">全部</button></div>
+                <div id="homeRecent"></div>
+                <div class="hint-line">同步状态：<span id="syncText">上次同步 今天 09:12</span></div>
+              </div>
+
+              <div class="screen" id="screen-scan">
+                <button class="back" onclick="go('home')">← 返回</button>
+                <div class="app-title">扫描二维码</div>
+                <p class="app-sub">将包装标签上的二维码放入取景框</p>
+                <div class="scan-box">
+                  <div class="scan-frame"></div>
+                  <div class="scan-hint">对准二维码 · 保持稳定</div>
+                </div>
+                <button class="btn-primary" onclick="scanSuccess()">模拟识别（1A2/Y2.0/100/26）</button>
+                <button class="btn-ghost" onclick="goForm('manual')">无法识别，手动输入</button>
+                <div class="hint-line">识别后仍需确认类型、数量和照片，不会自动保存。</div>
+              </div>
+
+              <div class="screen" id="screen-form">
+                <button class="back" onclick="goBackFromForm()">← 返回</button>
+                <div class="app-title">确认采集信息</div>
+                <p class="app-sub" id="sourceInfo">来源：扫码识别</p>
+                <div class="field-label">包装类型 <em>*</em></div>
+                <div class="seg">
+                  <button id="typeBtn1" class="sel" onclick="setType(1)">类型 1<br>含 UN 号的桶或纸箱</button>
+                  <button id="typeBtn2" onclick="setType(2)">类型 2<br>有限数量纸箱</button>
+                </div>
+                <div id="unFields">
+                  <div class="field-label">UN-Part1 <em>*</em><span id="manualTag" style="color:#8a5a1c"></span></div>
+                  <input class="input" id="unP1Input" placeholder="例如 1A2/Y2.0/100/26" autocomplete="off" oninput="onUnEdit()">
+                  <div class="field-label">UN-Part2 <em>*</em></div>
+                  <input class="input" id="unP2Input" placeholder="例如 CN/C222072 PI:001" autocomplete="off" oninput="onUnEdit()">
+                </div>
+                <div id="qtyField" style="display:none">
+                  <div class="field-label">数量 <em>*</em></div>
+                  <input class="input" id="qtyInput" type="number" min="1" step="1" value="1" inputmode="numeric">
+                </div>
+                <div class="field-label">拍照附件 <em>*</em></div>
+                <div class="photo-box" id="photoBox" onclick="togglePhoto()">＋ 点击拍照（原型模拟）</div>
+                <div class="form-error" id="formError"></div>
+                <div style="height:10px"></div>
+                <button class="btn-primary" onclick="saveRecord()">保存记录</button>
+                <div class="hint-line">保存后进入待上传队列。离线时标记“待复核”，联网后自动复核。</div>
+              </div>
+
+              <div class="screen" id="screen-records">
+                <button class="back" onclick="go('home')">← 返回</button>
+                <div class="app-title">采集记录</div>
+                <div class="tabs">
+                  <button id="tabLocal" class="on" onclick="setTab('local')">本机</button>
+                  <button id="tabServer" onclick="setTab('server')">服务器</button>
+                </div>
+                <div id="recordList"></div>
+                <div class="nav-row">
+                  <button onclick="go('upload')">上传数据</button>
+                  <button onclick="go('pull')">获取数据</button>
+                </div>
+              </div>
+
+              <div class="screen" id="screen-detail">
+                <button class="back" onclick="go('records')">← 返回记录</button>
+                <div class="app-title">记录详情</div>
+                <div id="detailBody"></div>
+                <div id="detailActions" style="margin-top:12px"></div>
+              </div>
+
+              <div class="screen" id="screen-upload">
+                <button class="back" onclick="go('home')">← 返回</button>
+                <div class="app-title">上传数据</div>
+                <p class="app-sub" id="uploadSummary">待上传 0 条</p>
+                <div id="uploadList"></div>
+                <div class="pull-msg" id="uploadMsg"></div>
+                <button class="btn-primary" id="uploadBtn" onclick="uploadAll()">全部上传</button>
+                <div class="hint-line">上传失败不会丢数据；网络恢复后可重试。</div>
+              </div>
+
+              <div class="screen" id="screen-pull">
+                <button class="back" onclick="go('home')">← 返回</button>
+                <div class="app-title">从服务器获取数据</div>
+                <p class="app-sub">增量拉取已上传记录</p>
+                <div class="sync-card">
+                  <div><b style="font-size:12px" id="lastSync">今天 09:12</b>上次同步</div>
+                </div>
+                <div class="pull-msg" id="pullMsg"></div>
+                <button class="btn-primary" onclick="pullData()">立即获取</button>
+                <button class="btn-ghost" onclick="setTab('server');go('records')">查看服务器记录</button>
+                <div class="hint-line">服务器记录为只读；已上传的本机记录会与服务器版本合并。</div>
+              </div>
+
+              <div class="toast" id="toast"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-notes">
+          <div class="note-card">
+            <h4>建议体验路径</h4>
+            <ul>
+              <li>登录 → 扫码 → 选择“类型 2” → UN 栏位自动隐藏 → 数量留空 → 保存，查看字段错误；</li>
+              <li>填写数量、点击照片框模拟拍照 → 保存，记录出现在列表；</li>
+              <li>点击右上角“断网” → 再保存一条，记录标记“待复核”；</li>
+              <li>断网时点击“全部上传”，查看失败提示与重试；恢复网络后再次上传；</li>
+              <li>“获取数据”后切换到“服务器”查看只读记录；</li>
+              <li>将 UN-Part1 改为 <span class="mono">0A0/Y0.0/0/00</span> 保存，模拟“编码不存在”的校验提示；改为 <span class="mono">3H1/Y1.5/50/24</span> 后上传，模拟服务端“可用数量不足”。</li>
+            </ul>
+          </div>
+          <div class="note-card">
+            <h4>原型与需求的对应</h4>
+            <div class="demo-legend">
+              <div class="legend-row"><span class="legend-dot"></span><span>登录页 → <b>FR-01</b> 账号登录</span></div>
+              <div class="legend-row"><span class="legend-dot"></span><span>主页与入口 → <b>FR-02</b> 主界面</span></div>
+              <div class="legend-row"><span class="legend-dot"></span><span>扫码页 → <b>FR-03</b> 扫码采集</span></div>
+              <div class="legend-row"><span class="legend-dot"></span><span>表单页 → <b>FR-05</b> 采集确认与保存</span></div>
+              <div class="legend-row"><span class="legend-dot"></span><span>列表与详情 → <b>FR-06</b> 本机记录</span></div>
+              <div class="legend-row"><span class="legend-dot"></span><span>上传页 → <b>FR-07</b> 上传与重试</span></div>
+              <div class="legend-row"><span class="legend-dot"></span><span>获取页 → <b>FR-08</b> 服务器数据</span></div>
+              <div class="legend-row"><span class="legend-dot"></span><span>拍照入口 → <b>FR-04</b>（P1，方案 B）</span></div>
+            </div>
+          </div>
+          <div class="note-card">
+            <h4>原型未覆盖</h4>
+            <p>账号开通、管理员停用账号、UN 主数据维护属于 eCoA 后台行为，不在本原型中；照片真实拍摄与 OCR 识别需在方案 B 开发阶段验证。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="s5">
+      <div class="sec-head">
+        <div class="sec-no">05</div>
+        <div>
+          <h2>功能需求</h2>
+          <p>每个模块说明触发条件、处理规则、结果与异常</p>
+        </div>
+      </div>
+
+      <div class="fr">
+        <div class="fr-head"><span class="fr-id">FR-01</span><h3>账号登录</h3><span class="tag">P0</span></div>
+        <div class="fr-body">
+          <div class="fr-kv">
+            <div class="k">目的</div><div class="v">让已授权的现场员工进入 App，并确保账号只能在 App 端使用。</div>
+            <div class="k">界面</div><div class="v">账号输入框、密码输入框、登录按钮、账号申请说明、版本号与网络状态提示。</div>
+            <div class="k">触发</div><div class="v">首次使用、退出登录后、令牌过期后、账号被停用后。</div>
+            <div class="k">处理规则</div><div class="v">
+              <ul class="bullet-list">
+                <li>账号与密码由 eCoA 管理员预置，App 不提供自助注册；提交前校验两项均非空。</li>
+                <li>登录成功后缓存会话，在配置的离线宽限期内可离线使用；超过宽限期必须联网重新登录。</li>
+                <li>同一账号在新设备登录时，旧设备会话是否失效由服务端策略决定 <span class="tag tbd">待确认</span>。</li>
+              </ul>
+            </div>
+            <div class="k">结果</div><div class="v">进入主界面；顶部显示当前账号；本地保留该账号的历史本机记录。</div>
+            <div class="k">异常</div><div class="v">
+              <ul class="bullet-list">
+                <li>账号或密码错误：提示“账号或密码错误”，不清空已输入的账号。</li>
+                <li>账号未开通 App 权限：提示“账号未开通 App 采集权限，请联系管理员”。</li>
+                <li>网络不可用：提示检查网络；若该设备曾成功登录且未超过离线宽限期，允许离线进入。</li>
+                <li>账号被停用：拒绝登录并提示联系管理员。</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fr">
+        <div class="fr-head"><span class="fr-id">FR-02</span><h3>主界面与采集入口</h3><span class="tag">P0</span></div>
+        <div class="fr-body">
+          <div class="fr-kv">
+            <div class="k">目的</div><div class="v">让员工进入 App 后一眼看到“怎么采、还有多少没传”，减少寻找入口的时间。</div>
+            <div class="k">界面</div><div class="v">三个大按钮（二维码扫描、拍照采集、手动录入）、同步状态卡、最近记录、记录/上传/获取入口。</div>
+            <div class="k">触发</div><div class="v">登录成功或从其他页面返回主页。</div>
+            <div class="k">处理规则</div><div class="v">
+              <ul class="bullet-list">
+                <li>“二维码扫描”和“手动录入”始终可用；“拍照采集”仅在方案 B 启用时展示。</li>
+                <li>采集模式选择不单独设页，由主页三个入口直接承担；现场最常用的动作保持在首屏。</li>
+                <li>同步状态卡展示待上传数量与上次同步时间；待上传为 0 时显示“暂无待上传记录”。</li>
+                <li>最近记录展示最近 3 条本机记录，按采集时间倒序；无记录时展示空态与扫码引导。</li>
+                <li>断网时显示全局提示条“当前离线，采集数据将保存在本机”，不阻断任何采集入口。</li>
+              </ul>
+            </div>
+            <div class="k">结果</div><div class="v">点击入口进入对应采集方式；点击待上传数量进入上传页；点击最近记录进入详情。</div>
+            <div class="k">异常</div><div class="v">会话过期时跳转登录页，本机未上传数据保留；待上传数量读取失败时显示“—”，不影响采集。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fr">
+        <div class="fr-head"><span class="fr-id">FR-03</span><h3>扫码采集</h3><span class="tag">P0</span></div>
+        <div class="fr-body">
+          <div class="fr-kv">
+            <div class="k">目的</div><div class="v">用相机读取包装标签上的二维码，自动带入 UN 号，减少手工输入。</div>
+            <div class="k">界面</div><div class="v">相机预览、取景框、扫码提示、手电筒开关、手动输入入口。</div>
+            <div class="k">触发</div><div class="v">从主页或采集模式页点击“二维码扫描”；首次使用需授予相机权限。</div>
+            <div class="k">处理规则</div><div class="v">
+              <ul class="bullet-list">
+                <li>识别到二维码后解析内容，去除空格、换行与连字符，统一转为大写，按 <span class="mono">UN</span> + 4 位数字匹配。</li>
+                <li>匹配成功：进入确认表单并自动填入 UN 号，同时保留识别原值。</li>
+                <li>二维码内容包含多个字段时，按与客户确认的编码规则解析；规则未确认前，整段内容作为候选并进入人工确认。</li>
+                <li>保存成功后可选择“继续扫码”，直接返回扫码页，减少来回跳转。</li>
+                <li>同一 UN 号允许重复采集，每次扫码形成独立记录 <span class="tag tbd">见 Q-05</span>。</li>
+              </ul>
+            </div>
+            <div class="k">结果</div><div class="v">进入 FR-05 确认表单；取消或失败时不产生记录。</div>
+            <div class="k">异常</div><div class="v">
+              <ul class="bullet-list">
+                <li>相机权限被拒绝：提示并提供“去设置”和“手动输入”两个选择。</li>
+                <li>二维码损坏、反光或光线不足：提示调整角度/开启手电筒，持续失败时引导手动输入。</li>
+                <li>内容不是有效 UN 号：提示“未识别到有效 UN 号”，展示原始内容供核对，并提供手动输入。</li>
+                <li>离线：扫码解析不依赖网络，可正常使用。</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fr">
+        <div class="fr-head"><span class="fr-id">FR-04</span><h3>拍照采集与识别</h3><span class="tag p1">P1 · 方案 B</span></div>
+        <div class="fr-body">
+          <div class="fr-kv">
+            <div class="k">目的</div><div class="v">当二维码磨损或无法扫描时，通过拍摄标签照片识别 UN 号，同时留下凭证照片。</div>
+            <div class="k">界面</div><div class="v">相机取景、拍照按钮、照片预览、识别进度、候选结果列表、重拍与手动输入入口。</div>
+            <div class="k">触发</div><div class="v">方案 B 启用时，从主页点击“拍照采集”；首次使用需授予相机权限。</div>
+            <div class="k">处理规则</div><div class="v">
+              <ul class="bullet-list">
+                <li>拍照后先保留照片，再在本机执行文字识别；识别过程展示进度，可取消并重拍。</li>
+                <li>按 UN 号规则从识别文本中提取候选；只有一个候选时预填，多个候选时由员工选择。</li>
+                <li>识别结果必须经员工确认后才可保存，系统不自动入库。</li>
+                <li>员工修改预填值时，记录“识别后修改”；未识别到结果时可直接手动输入，记录“全程手动”。</li>
+                <li>照片作为记录附件保留，并随记录上传；未上传前不得清理。</li>
+              </ul>
+            </div>
+            <div class="k">结果</div><div class="v">进入 FR-05 确认表单，UN 号已预填，照片已关联；取消时不产生记录，临时照片按本地清理规则处理。</div>
+            <div class="k">异常</div><div class="v">
+              <ul class="bullet-list">
+                <li>未识别到 UN 号：提示“未识别到 UN 号”，保留照片，提供手动输入。</li>
+                <li>识别出多个候选：不自动选择，展示候选列表并允许手动输入其他值。</li>
+                <li>识别耗时过长：允许取消；取消后仍可重拍或手动输入。</li>
+                <li>相机权限被拒绝或存储空间不足：提示原因，提供手动输入兜底。</li>
+                <li>方案 A 未启用拍照识别：主页不展示该入口，App 内不出现 OCR 相关文案。</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fr">
+        <div class="fr-head"><span class="fr-id">FR-05</span><h3>采集信息确认与保存</h3><span class="tag">P0</span></div>
+        <div class="fr-body">
+          <div class="fr-kv">
+            <div class="k">目的</div><div class="v">在保存前补齐类型、数量和照片，完成校验，并把记录可靠地写入本机。</div>
+            <div class="k">界面</div><div class="v">类型选择、UN 号输入、数量输入（仅类型 2）、照片区域、校验提示、保存按钮、继续采集入口。</div>
+            <div class="k">触发</div><div class="v">扫码成功、拍照识别完成，或从主页/扫码失败页点击“手动录入”。</div>
+            <div class="k">字段规则</div><div class="v">
+              <ul class="bullet-list">
+                <li><b>类型</b>：必填，二选一；新建默认沿用上次选择，首次默认类型 1。</li>
+                <li><b>UN 号</b>：必填；自动填入后可编辑；格式为 <span class="mono">UN</span> + 4 位数字；保存前自动去除空格与连字符并转大写。</li>
+                <li><b>数量</b>：仅类型 2 展示且必填，必须为正整数；类型 1 固定为 1，不展示输入框。</li>
+                <li><b>照片</b>：必填；支持重拍/更换；方案 A 是否保留为必填见 Q-03。</li>
+                <li><b>人工改动</b>：最终值等于识别原值时为“无”；不一致为“识别后修改”；全程手动输入为“全程手动”。</li>
+              </ul>
+            </div>
+            <div class="k">保存校验</div><div class="v">
+              <div class="callout teal" style="margin-top:2px">
+                <strong>手动录入分支：</strong>主页“手动录入”直接打开本表单，不经过扫码或拍照；UN 号初始为空，人工改动记为“全程手动”。除来源与预填值外，字段、校验、保存与离线规则与其他方式一致，保存后进入同一本机记录与上传队列。
+              </div>
+              <ul class="bullet-list">
+                <li>完整性：类型、UN 号、数量（类型 2）、照片均需满足。</li>
+                <li>格式：UN 号不符合规则时阻止保存，提示正确格式。</li>
+                <li>本地业务校验：命中本地 UN 主数据时，检查是否存在、是否在有效期内、可用数量是否足够；任一项不通过则阻止保存并说明原因。</li>
+                <li>无法判断：UN 号不在本地快照、快照过期或离线且无快照时，允许保存，校验结论记为“本地待复核”。</li>
+                <li>在线预校验：网络与 eCoA 可用时调用服务端校验；不通过则阻止保存；服务端不可用时退回本地规则并标记待复核。</li>
+                <li>校验通过后写入本机，同步状态为“待上传”，校验结论为“待服务端确认”或“本地待复核”。</li>
+              </ul>
+            </div>
+            <div class="k">结果</div><div class="v">提示“已保存，待上传”；记录出现在本机列表；提供“继续采集”和“查看记录”。</div>
+            <div class="k">异常</div><div class="v">
+              <ul class="bullet-list">
+                <li>保存失败（存储空间不足、写入异常）：保留当前表单内容，提示重试，不产生半条记录。</li>
+                <li>重复点击保存：只生成一条记录，按钮在处理期间置为不可用。</li>
+                <li>服务端预校验超时：按“无法判断”处理，保存并标记待复核，不要求员工重试。</li>
+                <li>照片拍摄失败：保留其他字段，提示重拍或改用手动录入；照片未完成前不允许保存。</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fr">
+        <div class="fr-head"><span class="fr-id">FR-06</span><h3>本机记录与详情</h3><span class="tag">P0</span></div>
+        <div class="fr-body">
+          <div class="fr-kv">
+            <div class="k">目的</div><div class="v">让员工随时确认“采了什么、传了没有、为什么失败”，并在必要时修正未上传记录。</div>
+            <div class="k">界面</div><div class="v">“本机 / 服务器”切换、记录列表、筛选、记录详情、编辑与删除入口。</div>
+            <div class="k">触发</div><div class="v">主页“最近记录/全部”、底部记录入口、保存成功后的“查看记录”。</div>
+            <div class="k">列表规则</div><div class="v">
+              <ul class="bullet-list">
+                <li>按采集时间倒序；每行展示 UN 号、类型、采集时间、状态标签。</li>
+                <li>支持按状态、类型、日期范围、是否人工改动筛选；筛选条件可清除。</li>
+                <li>状态标签按 3.3 的合并规则展示；失败记录同时展示简短原因。</li>
+                <li>空态区分“还没有采集记录”和“筛选无结果”，后者提供清除筛选。</li>
+              </ul>
+            </div>
+            <div class="k">详情规则</div><div class="v">
+              <ul class="bullet-list">
+                <li>展示记录编号、类型、UN 号、识别原值、人工改动、数量、照片、采集时间、账号、Android ID、校验结论与说明、同步状态。</li>
+                <li>照片可查看大图；服务器记录的照片按服务端返回地址展示。</li>
+                <li>“待上传/上传失败/校验失败”记录可编辑；“已上传且校验通过”的记录不可编辑；上传中的记录不可编辑。</li>
+                <li>删除仅限本机未上传记录，需二次确认，确认文案说明“照片与记录将一并删除，且无法恢复”。</li>
+              </ul>
+            </div>
+            <div class="k">结果</div><div class="v">编辑保存后仍为待上传并重新参与校验；删除后列表与待上传数量同步更新。</div>
+            <div class="k">异常</div><div class="v">记录已被服务端合并时以服务器版本为准；照片文件缺失时展示占位图并提示“照片不可用”，不影响记录字段查看。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fr">
+        <div class="fr-head"><span class="fr-id">FR-07</span><h3>数据上传与重试</h3><span class="tag">P0</span></div>
+        <div class="fr-body">
+          <div class="fr-kv">
+            <div class="k">目的</div><div class="v">把本机记录与照片可靠地提交到 eCoA，并在失败时保留数据、支持恢复。</div>
+            <div class="k">界面</div><div class="v">待上传/失败数量、记录列表、全部上传按钮、逐条状态与失败原因、重试入口。</div>
+            <div class="k">触发</div><div class="v">主页待上传入口、记录页“上传数据”、用户点击“全部上传/重试”；网络恢复且存在待上传记录时自动重试。</div>
+            <div class="k">处理规则</div><div class="v">
+              <ul class="bullet-list">
+                <li>只处理“待上传”和“上传失败”记录，按采集时间先进先出，逐条上传；单条失败不阻断后续记录。</li>
+                <li>记录与照片一起提交；照片未成功上传前，该记录不得标记为已上传。</li>
+                <li>同一条记录重复提交时，服务端按记录编号识别并返回同一结果，不产生重复数据。</li>
+                <li>上传中记录不可编辑；用户可取消上传，已取消记录回到“待上传”。</li>
+                <li>自动重试使用退避间隔，不因一次失败反复弹窗；用户可随时手动重试。</li>
+                <li>服务端校验不通过时，记录转为“校验失败”，保存服务端返回的原因，并允许编辑后重新上传。</li>
+              </ul>
+            </div>
+            <div class="k">结果</div><div class="v">成功记录标记“已上传”并从待上传数量中移除；失败记录保留在本机，展示“上传失败”或“校验失败”。</div>
+            <div class="k">异常</div><div class="v">
+              <ul class="bullet-list">
+                <li>断网：提示“网络不可用，记录已保留”，状态转为“上传失败”，恢复网络后可重试。</li>
+                <li>服务端超时/5xx：记录保持可重试，不丢失照片；连续失败展示“稍后重试”。</li>
+                <li>登录过期：暂停上传，提示重新登录；本机记录与队列保留。</li>
+                <li>照片上传成功但记录失败：下次重试复用已上传照片，避免重复传输。</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fr">
+        <div class="fr-head"><span class="fr-id">FR-08</span><h3>服务器数据获取与展示</h3><span class="tag">P0</span></div>
+        <div class="fr-body">
+          <div class="fr-kv">
+            <div class="k">目的</div><div class="v">让员工和现场管理者在 App 内看到已上传到 eCoA 的记录，确认数据确实到达后台。</div>
+            <div class="k">界面</div><div class="v">上次同步时间、立即获取按钮、获取结果提示、服务器记录列表与详情。</div>
+            <div class="k">触发</div><div class="v">主页或记录页点击“获取数据”；进入页面不自动拉取，避免无意义流量。</div>
+            <div class="k">处理规则</div><div class="v">
+              <ul class="bullet-list">
+                <li>按上次同步时间增量拉取，分页获取直到完成；同一条记录不重复写入。</li>
+                <li>拉取范围默认仅当前账号相关记录 <span class="tag tbd">见 Q-08</span>。</li>
+                <li>本地同编号记录已被服务端接受时，以服务器版本覆盖展示；未上传记录不参与覆盖。</li>
+                <li>服务器记录只读，不提供编辑、删除、重新上传。</li>
+                <li>刷新成功后更新上次同步时间，并提示本次新增/更新数量。</li>
+              </ul>
+            </div>
+            <div class="k">结果</div><div class="v">“服务器”列表出现对应记录，可按状态、类型、日期筛选，详情展示服务端校验结论与照片。</div>
+            <div class="k">异常</div><div class="v">
+              <ul class="bullet-list">
+                <li>断网或 eCoA 不可用：提示获取失败，保留已有记录与上次同步时间，可重试。</li>
+                <li>拉取到一半失败：已获取部分保留，下次从上次成功位置继续。</li>
+                <li>无新数据：提示“暂无新数据”，不清空已有列表。</li>
+                <li>照片地址失效：详情展示占位图与“照片加载失败”，提供重新加载。</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fr">
+        <div class="fr-head"><span class="fr-id">FR-09</span><h3>关于我们与支持</h3><span class="tag">P0</span></div>
+        <div class="fr-body">
+          <div class="fr-kv">
+            <div class="k">目的</div><div class="v">提供版本、支持联系人与数据使用说明，让员工在遇到账号、权限或数据问题时知道找谁。</div>
+            <div class="k">界面</div><div class="v">App 名称与版本号、技术支持联系人/服务台、账号与权限说明、隐私说明入口。</div>
+            <div class="k">规则</div><div class="v">
+              <ul class="bullet-list">
+                <li>展示当前版本号与构建号；不提供 App 内自助升级入口，升级按企业分发方式执行 <span class="tag tbd">见 Q-10</span>。</li>
+                <li>隐私说明需明确 Android ID 的用途、照片用途、数据保存范围与访问权限。</li>
+                <li>账号申请、密码重置、权限异常统一引导至管理员，不在 App 内处理。</li>
+              </ul>
+            </div>
+            <div class="k">结果</div><div class="v">员工可复制或查看支持联系方式；隐私说明可完整阅读。</div>
+            <div class="k">异常</div><div class="v">版本号读取失败时展示“未知版本”，不影响其他功能。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="s6">
+      <div class="sec-head">
+        <div class="sec-no">06</div>
+        <div>
+          <h2>共享规则与异常</h2>
+          <p>跨模块统一适用的校验、离线、照片与权限规则</p>
+        </div>
+      </div>
+
+      <h3>6.1 校验规则总表</h3>
+      <table>
+        <thead><tr><th>规则</th><th>触发时机</th><th>在线</th><th>离线</th><th>不通过时</th></tr></thead>
+        <tbody>
+          <tr><td>UN 号格式</td><td>输入完成、保存</td><td>客户端校验</td><td>客户端校验</td><td>阻止保存，提示正确格式</td></tr>
+          <tr><td>UN 号存在</td><td>保存、上传</td><td>以服务端为准</td><td>本地快照；无法判断时待复核</td><td>在线阻止保存；上传时转“校验失败”</td></tr>
+          <tr><td>有效期</td><td>保存、上传</td><td>以服务端为准</td><td>本地快照；无法判断时待复核</td><td>同上</td></tr>
+          <tr><td>可用数量</td><td>保存、上传</td><td>以服务端为准</td><td>本地快照；无法判断时待复核</td><td>同上</td></tr>
+          <tr><td>数量格式</td><td>保存</td><td>正整数</td><td>正整数</td><td>阻止保存</td></tr>
+          <tr><td>照片必填</td><td>保存</td><td>必须存在</td><td>必须存在</td><td>阻止保存</td></tr>
+          <tr><td>重复记录</td><td>上传</td><td>按记录编号幂等</td><td>本地按记录编号去重</td><td>返回已有结果，不新增记录</td></tr>
+        </tbody>
+      </table>
+
+      <h3>6.2 离线与同步规则</h3>
+      <ul class="bullet-list">
+        <li>采集、保存、本机查询不依赖网络；只有登录、在线预校验、上传、拉取依赖 eCoA。</li>
+        <li>离线采集使用与在线相同的字段集合，不额外增加离线专用字段；差异仅在校验结论、校验方式和上传时机。</li>
+        <li>已登录设备在离线宽限期内可离线使用；默认 7 天，实际值由服务端配置 <span class="tag tbd">见 Q-06</span>。</li>
+        <li>UN 主数据快照随登录和拉取更新；超过有效期的快照不再用于“阻止保存”，只用于提示，记录标记待复核。</li>
+        <li>网络恢复后自动补传待上传记录；补传不要求员工再次确认。</li>
+        <li>同一记录编号在服务端唯一；客户端重复提交不产生重复数据。</li>
+        <li>上传顺序为先进先出；失败记录保留在原队列并累计原因，不改变采集时间。</li>
+      </ul>
+
+      <h3>6.3 照片规则</h3>
+      <ul class="bullet-list">
+        <li>照片为采集记录的必填附件，保存前完成拍摄；方案 A 是否保留见 Q-03。</li>
+        <li>照片与记录绑定，记录删除时一并删除；已上传记录的照片不随本机清理自动删除 <span class="tag tbd">见 Q-07</span>。</li>
+        <li>上传前允许压缩，但需保证标签文字可辨认；压缩不得改变 UN 号可读性。</li>
+        <li>未上传记录的照片不得被清理；上传成功后的本地照片保留策略见 Q-07。</li>
+      </ul>
+
+      <h3>6.4 Android ID 与追溯</h3>
+      <ul class="bullet-list">
+        <li>Android ID 由 App 自动获取，不在采集表单主区域展示，记录详情可见。</li>
+        <li>Android ID 仅用于设备维度分析（例如某台设备识别失败率是否偏高），不作为账号身份或唯一键。</li>
+        <li>恢复出厂设置后 Android ID 可能变化，因此追溯以“账号 + 采集时间 + 记录编号”为主。</li>
+        <li>每条记录需保留识别原值与人工改动类型，支持后续分析识别质量。</li>
+      </ul>
+
+      <h3>6.5 权限与会话</h3>
+      <ul class="bullet-list">
+        <li>App 采集员只能使用 App，不能登录 eCoA 网页；账号停用后 App 端请求失效。</li>
+        <li>App 内不提供账号注册、角色修改、密码修改；统一由管理员处理。</li>
+        <li>本机记录归属于采集时的登录账号；切换账号后不展示其他账号的本机记录。</li>
+        <li>退出登录时提示是否存在待上传记录；退出后本机记录保留，重新登录同一账号可继续上传。</li>
+      </ul>
+
+      <h3>6.6 界面与文案规范</h3>
+      <ul class="bullet-list">
+        <li>主要操作按钮触控区域不小于 48dp，适配戴手套操作；关键按钮使用高对比度。</li>
+        <li>错误提示使用现场人员能理解的语言，说明“发生了什么 + 怎么处理”，不展示内部错误码。</li>
+        <li>网络状态、待上传数量、当前账号在主页可见；离线状态有持续提示，不依赖一次性弹窗。</li>
+        <li>破坏性操作（删除记录、退出登录有未上传数据）必须二次确认，并说明后果。</li>
+      </ul>
+    </section>
+
+    <section id="s7">
+      <div class="sec-head">
+        <div class="sec-no">07</div>
+        <div>
+          <h2>待确认事项</h2>
+          <p>仍会实质影响字段、校验或范围的决策</p>
+        </div>
+      </div>
+
+      <p class="lead">以下问题在需求阶段无法从现有材料得出确定结论。未确认前，本文按“默认处理”描述产品行为，实施时需逐项关闭。</p>
+
+      <table>
+        <thead><tr><th>编号</th><th>问题</th><th>影响</th><th>默认处理</th></tr></thead>
+        <tbody>
+          <tr><td>Q-01</td><td>二维码内容是什么格式？只含 UN 号，还是同时包含类型、数量、批次？</td><td>决定解析规则、表单预填范围与错误提示</td><td>按“仅 UN 号”实现，保留多字段解析扩展；未确认前整段内容进入人工确认</td></tr>
+          <tr><td>Q-02</td><td>类型 2“有限数量纸箱”是否也必须填写 UN 号？</td><td>决定字段必填与校验口径</td><td>默认类型 2 也采集 UN 号，数量必填</td></tr>
+          <tr><td>Q-03</td><td>方案 A（仅扫码）是否仍要求拍照附件必填？</td><td>影响相机权限、照片存储与上传范围</td><td>建议保留照片作为凭证，但不做 OCR；如客户不需要，需同步调整表单与存储</td></tr>
+          <tr><td>Q-04</td><td>可用数量何时扣减？上传成功即扣减，还是后台审核后扣减？并发采集如何判定？</td><td>影响保存校验、上传拒绝与数量一致性</td><td>以服务端上传时校验为准；数量不足返回校验失败，不自动重试</td></tr>
+          <tr><td>Q-05</td><td>同一 UN 号是否允许重复采集？例如同一 UN 号对应多个包装。</td><td>影响是否去重、是否提示已采集</td><td>默认允许重复，每次采集形成独立记录</td></tr>
+          <tr><td>Q-06</td><td>离线宽限期与 UN 主数据缓存有效期分别是多久？</td><td>影响离线登录与本地校验准确性</td><td>离线宽限 7 天；主数据缓存 24 小时，过期后只提示不阻止保存</td></tr>
+          <tr><td>Q-07</td><td>照片保存期限、分辨率要求与上传后的本地清理策略？</td><td>影响存储成本、上传大小与照片可追溯性</td><td>上传前压缩且标签文字可辨认；上传成功后本地照片保留至记录被清理</td></tr>
+          <tr><td>Q-08</td><td>“从服务器获取数据”的可见范围：仅本账号，还是本班组/全站点？</td><td>影响权限边界与列表范围</td><td>默认仅当前账号相关记录；如放开需增加数据权限规则</td></tr>
+          <tr><td>Q-09</td><td>同一账号在新设备登录时，旧设备是否立即失效？</td><td>影响现场换机、共享设备与会话安全</td><td>默认允许多设备登录，由服务端令牌策略控制；如要求单设备需明确</td></tr>
+          <tr><td>Q-10</td><td>App 如何分发与升级？是否有 OCR 识别率的验收样本与目标？</td><td>影响版本管理、现场支持与方案 B 验收</td><td>建议企业内部分发；OCR 以现场样本回归，人工修正后可用为验收口径</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout">
+        <strong>建议优先关闭：</strong>Q-01、Q-02、Q-03、Q-04。这四项直接改变表单字段、校验规则和方案 A/B 的交付边界，确认后再进入开发可避免返工；其余问题可在开发与试点阶段逐步关闭。
+      </div>
+    </section>
+
+    <script>
+      const state = {
+        online: true,
+        logged: false,
+        type: 1,
+        photo: false,
+        source: 'scan',
+        raw1: '',
+        raw2: '',
+        records: [],
+        server: [],
+        tab: 'local',
+        seq: 0,
+        uploading: false,
+        detailId: null
+      };
+
+      function $(id){ return document.getElementById(id); }
+      function sleep(ms){ return new Promise(function(resolve){ setTimeout(resolve, ms); }); }
+      function esc(value){
+        return String(value == null ? '' : value)
+          .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+          .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+      }
+      function toast(message){
+        const el = $('toast');
+        el.textContent = message;
+        el.classList.add('show');
+        clearTimeout(el._timer);
+        el._timer = setTimeout(function(){ el.classList.remove('show'); }, 2300);
+      }
+      function showMsg(id, text, isError){
+        const el = $(id);
+        if(!el) return;
+        el.textContent = text;
+        el.classList.add('show');
+        el.classList.toggle('err', !!isError);
+      }
+      function hideMsg(id){
+        const el = $(id);
+        if(el){ el.classList.remove('show'); el.classList.remove('err'); }
+      }
+
+      function go(screen){
+        document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+        const target = $('screen-' + screen);
+        if(target) target.classList.add('active');
+        const body = document.querySelector('.phone-body');
+        if(body) body.scrollTop = 0;
+        if(screen === 'home') renderHome();
+        if(screen === 'records') renderRecords();
+        if(screen === 'upload') renderUpload();
+      }
+
+      function toggleNet(){
+        state.online = !state.online;
+        const btn = $('netBtn');
+        btn.textContent = state.online ? '网络：在线' : '网络：离线';
+        btn.classList.toggle('off', !state.online);
+        $('phoneNet').textContent = state.online ? '4G' : '离线';
+        if(state.online){
+          toast('网络已恢复，待上传记录可继续上传');
+        }else{
+          toast('已切换为离线状态：采集仍可继续');
+        }
+        renderHome();
+      }
+
+      function login(){
+        const account = $('loginAccount').value.trim();
+        const password = $('loginPwd').value.trim();
+        if(!account || !password){
+          $('loginError').classList.add('show');
+          return;
+        }
+        $('loginError').classList.remove('show');
+        state.logged = true;
+        $('homeUser').textContent = account;
+        go('home');
+        toast('登录成功，账号仅可用于 App');
+      }
+
+      function photoEntry(){
+        goForm('photo', '1A2/Y2.0/100/26', 'CN/C222072 PI:001');
+        toast('方案 B 演示：已模拟拍照并识别 UN 编码');
+      }
+
+      function scanSuccess(){
+        goForm('scan', '1A2/Y2.0/100/26', 'CN/C222072 PI:001');
+      }
+
+      function goForm(source, un1, un2){
+        state.source = source;
+        const scanned = (source === 'scan' || source === 'photo');
+        state.raw1 = scanned ? un1 : '';
+        state.raw2 = scanned ? un2 : '';
+        state.photo = (source === 'photo');
+        $('sourceInfo').textContent = source === 'scan' ? '来源：扫码识别'
+          : source === 'photo' ? '来源：拍照识别（方案 B）' : '来源：手动输入';
+        $('unP1Input').value = un1 || '';
+        $('unP2Input').value = un2 || '';
+        $('manualTag').textContent = source === 'manual' ? '全程手动' : '';
+        $('qtyInput').value = '1';
+        $('formError').classList.remove('show');
+        setType(1);
+        updatePhotoBox();
+        go('form');
+      }
+
+      function goBackFromForm(){
+        if(state.source === 'scan'){ go('scan'); }
+        else { go('home'); }
+      }
+
+      function setType(type){
+        state.type = type;
+        $('typeBtn1').classList.toggle('sel', type === 1);
+        $('typeBtn2').classList.toggle('sel', type === 2);
+        $('qtyField').style.display = type === 2 ? 'block' : 'none';
+        $('unFields').style.display = type === 1 ? 'block' : 'none';
+        if(type === 1){ $('qtyInput').value = '1'; }
+      }
+
+      function onUnEdit(){
+        if(state.source === 'manual'){
+          $('manualTag').textContent = '全程手动';
+          return;
+        }
+        const p1 = $('unP1Input').value.trim();
+        const p2 = $('unP2Input').value.trim();
+        const changed = (p1 && p1 !== state.raw1) || (p2 && p2 !== state.raw2);
+        $('manualTag').textContent = changed ? '识别后修改' : '';
+      }
+
+      function updatePhotoBox(){
+        const box = $('photoBox');
+        box.classList.toggle('has', state.photo);
+        box.textContent = state.photo ? '✓ 照片已拍摄（原型模拟）' : '＋ 点击拍照（原型模拟）';
+      }
+
+      function togglePhoto(){
+        state.photo = !state.photo;
+        updatePhotoBox();
+      }
+
+      function formError(message){
+        const el = $('formError');
+        if(message){
+          el.textContent = message;
+          el.classList.add('show');
+          toast(message);
+        }else{
+          el.classList.remove('show');
+        }
+      }
+
+      function saveRecord(){
+        formError('');
+        const needUn = state.type === 1;
+        const un1 = needUn ? $('unP1Input').value.trim() : '';
+        const un2 = needUn ? $('unP2Input').value.trim() : '';
+        const qty = parseInt($('qtyInput').value, 10);
+        if(needUn && !un1){ formError('请输入 UN-Part1'); return; }
+        if(needUn && !un2){ formError('请输入 UN-Part2'); return; }
+        if(state.type === 2 && (!qty || qty < 1)){ formError('请输入正整数数量'); return; }
+        if(!state.photo){ formError('请先拍摄照片'); return; }
+        if(needUn && un1 === '0A0/Y0.0/0/00'){ formError('该 UN 编码不存在，请核对标签'); return; }
+
+        let manual = '无';
+        if(state.source === 'manual'){ manual = '全程手动'; }
+        else if(needUn && (un1 !== state.raw1 || un2 !== state.raw2)){ manual = '识别后修改'; }
+
+        state.seq += 1;
+        const record = {
+          id: 'R' + String(state.seq).padStart(3, '0'),
+          un1: un1,
+          un2: un2,
+          raw1: state.raw1,
+          raw2: state.raw2,
+          type: state.type,
+          qty: state.type === 1 ? 1 : qty,
+          photo: true,
+          status: '待上传',
+          validation: state.online ? '待服务端确认' : '本地待复核',
+          manual: manual,
+          reason: '',
+          time: new Date().toTimeString().slice(0, 5),
+          account: $('homeUser').textContent || 'clerk01',
+          android: 'a1b2c3d4',
+          sourceType: state.source
+        };
+        state.records.unshift(record);
+        state.tab = 'local';
+        setTabUI();
+        go('records');
+        toast('已保存，待上传');
+      }
+
+      function isRetryable(record){
+        return record.status === '待上传'
+          || record.status === '上传失败'
+          || (record.status === '已上传' && record.validation === '不通过');
+      }
+
+      function statusInfo(record){
+        if(record.status === '上传失败'){ return ['上传失败', 'fail']; }
+        if(record.status === '上传中'){ return ['上传中', 'wait']; }
+        if(record.status === '已上传'){
+          return record.validation === '不通过' ? ['校验失败', 'fail'] : ['已上传', 'ok'];
+        }
+        if(record.status === '待上传'){
+          return record.validation === '本地待复核' ? ['待复核', 'review'] : ['待上传', 'wait'];
+        }
+        return [record.status, ''];
+      }
+
+      function recordRow(record){
+        const info = statusInfo(record);
+        const typeText = '类型 ' + record.type + (record.type === 2 ? ' · ' + record.qty + ' 件' : '');
+        return '<div class="record-row" onclick="openDetail(\'' + record.id + '\')">'
+          + '<div><b>' + esc(record.un1 || '—') + '</b>'
+          + (record.type === 2 ? '' : '<div>' + esc(record.un2 || '—') + '</div>')
+          + '<div>' + typeText + ' · ' + esc(record.time) + '</div></div>'
+          + '<span class="status-chip ' + info[1] + '">' + info[0] + '</span></div>';
+      }
+
+      function emptyBox(text){
+        return '<div class="empty">' + text + '</div>';
+      }
+
+      function renderHome(){
+        const pending = state.records.filter(function(r){
+          return r.status === '待上传' || r.status === '上传失败';
+        }).length;
+        $('pendingCount').textContent = pending;
+        const recent = state.records.slice(0, 3);
+        $('homeRecent').innerHTML = recent.length
+          ? recent.map(recordRow).join('')
+          : emptyBox('暂无记录，点击“二维码扫描”开始采集');
+        $('syncText').textContent = state.online
+          ? '上次同步 今天 09:12'
+          : '当前离线 · 数据保存在本机';
+      }
+
+      function setTab(tab){
+        state.tab = tab;
+        setTabUI();
+        renderRecords();
+      }
+
+      function setTabUI(){
+        $('tabLocal').classList.toggle('on', state.tab === 'local');
+        $('tabServer').classList.toggle('on', state.tab === 'server');
+      }
+
+      function renderRecords(){
+        const list = state.tab === 'local' ? state.records : state.server;
+        if(!list.length){
+          $('recordList').innerHTML = emptyBox(
+            state.tab === 'local'
+              ? '还没有采集记录<br>返回主页扫描二维码开始采集'
+              : '还没有服务器数据<br>点击下方“获取数据”拉取'
+          );
+          return;
+        }
+        $('recordList').innerHTML = list.map(recordRow).join('');
+      }
+
+      function findRecord(id){
+        return state.records.find(function(r){ return r.id === id; })
+          || state.server.find(function(r){ return r.id === id; });
+      }
+
+      function detailRow(label, value){
+        return '<div class="detail-line"><span>' + label + '</span><span>' + esc(value) + '</span></div>';
+      }
+
+      function openDetail(id){
+        const record = findRecord(id);
+        if(!record) return;
+        state.detailId = id;
+        const info = statusInfo(record);
+        const rows = [
+          detailRow('记录编号', record.id),
+          detailRow('状态', info[0]),
+          detailRow('类型', record.type === 1 ? '类型 1 · 含 UN 号的桶或纸箱' : '类型 2 · 有限数量纸箱'),
+          detailRow('UN-Part1', record.type === 2 ? '不适用' : record.un1),
+          detailRow('UN-Part2', record.type === 2 ? '不适用' : record.un2),
+          detailRow('识别原值', record.type === 2 ? '不适用' : (record.raw1 || '—') + ' / ' + (record.raw2 || '—')),
+          detailRow('人工改动', record.manual || '无'),
+          detailRow('数量', record.qty),
+          detailRow('照片', '已拍摄（原型模拟）'),
+          detailRow('采集账号', record.account),
+          detailRow('采集时间', record.time),
+          detailRow('Android ID', record.android + '（模拟）'),
+          detailRow('校验结论', record.validation),
+          detailRow('数据来源', record.source === 'server' ? '服务器' : '本机')
+        ];
+        if(record.reason){ rows.push(detailRow('校验说明', record.reason)); }
+        $('detailBody').innerHTML = rows.join('');
+        let actions = '';
+        if(record.source === 'server'){
+          actions = '<div class="hint-line">服务器记录只读，不可编辑或删除。</div>';
+        }else{
+          if(isRetryable(record)){
+            actions += '<button class="btn-primary" onclick="uploadSingle(\'' + record.id + '\')">重新上传</button>';
+          }
+          if(record.status === '待上传' || record.status === '上传失败'){
+            actions += '<button class="btn-ghost" onclick="deleteRecord(\'' + record.id + '\')">删除记录</button>';
+          }
+        }
+        $('detailActions').innerHTML = actions;
+        go('detail');
+      }
+
+      function deleteRecord(id){
+        if(!window.confirm('删除后记录与照片将一并移除，且无法恢复。确定删除？')) return;
+        state.records = state.records.filter(function(r){ return r.id !== id; });
+        state.tab = 'local';
+        setTabUI();
+        go('records');
+        renderHome();
+        toast('记录已删除');
+      }
+
+      function uploadSummaryData(){
+        const retryable = state.records.filter(isRetryable);
+        const failed = retryable.filter(function(r){
+          return r.status === '上传失败' || r.validation === '不通过';
+        }).length;
+        return { list: retryable, failed: failed };
+      }
+
+      function renderUpload(){
+        const data = uploadSummaryData();
+        $('uploadSummary').textContent = '待上传 ' + data.list.length + ' 条'
+          + (data.failed ? ' · 失败 ' + data.failed + ' 条' : '');
+        if(!data.list.length){
+          $('uploadList').innerHTML = emptyBox('暂无待上传记录<br>返回主页继续采集');
+        }else{
+          $('uploadList').innerHTML = data.list.map(function(record){
+            const info = statusInfo(record);
+            return '<div class="upload-row"><div><b>' + esc(record.un1 || '—') + '</b>'
+              + '<small>' + (record.type === 2 ? '' : esc(record.un2 || '—') + ' · ') + '类型 ' + record.type + ' · ' + esc(record.time)
+              + (record.reason ? ' · ' + esc(record.reason) : '') + '</small></div>'
+              + '<span class="status-chip ' + info[1] + '">' + info[0] + '</span></div>';
+          }).join('');
+        }
+        const btn = $('uploadBtn');
+        if(btn){
+          btn.disabled = state.uploading || !data.list.length;
+          btn.textContent = state.uploading ? '上传中…' : '全部上传';
+        }
+      }
+
+      async function uploadAll(){
+        if(state.uploading) return;
+        const data = uploadSummaryData();
+        if(!data.list.length){ toast('暂无待上传记录'); return; }
+        hideMsg('uploadMsg');
+        if(!state.online){
+          data.list.forEach(function(record){
+            record.status = '上传失败';
+            record.reason = '网络不可用';
+          });
+          renderUpload();
+          renderHome();
+          showMsg('uploadMsg', '网络不可用，记录已保留，可恢复网络后重试', true);
+          toast('网络不可用，记录仍在本地');
+          return;
+        }
+        state.uploading = true;
+        renderUpload();
+        let ok = 0, fail = 0;
+        for(let i = 0; i < data.list.length; i++){
+          const record = data.list[i];
+          if(!state.online){
+            record.status = '上传失败';
+            record.reason = '网络中断';
+            fail += 1;
+            continue;
+          }
+          record.status = '上传中';
+          renderUpload();
+          showMsg('uploadMsg', '正在上传 ' + (i + 1) + '/' + data.list.length + '：' + record.un1, false);
+          await sleep(650);
+          if(record.un1 === '3H1/Y1.5/50/24'){
+            record.status = '已上传';
+            record.validation = '不通过';
+            record.reason = '可用数量不足';
+            fail += 1;
+          }else{
+            record.status = '已上传';
+            record.validation = '通过';
+            record.reason = '';
+            ok += 1;
+          }
+        }
+        state.uploading = false;
+        renderUpload();
+        renderHome();
+        if(fail){
+          showMsg('uploadMsg', '上传完成：成功 ' + ok + ' 条，失败 ' + fail + ' 条。失败记录可在记录详情中重试', true);
+        }else{
+          showMsg('uploadMsg', '上传完成：成功 ' + ok + ' 条', false);
+        }
+        toast(fail ? '部分记录上传失败，请查看原因' : '全部记录已上传');
+      }
+
+      function uploadSingle(id){
+        const record = state.records.find(function(r){ return r.id === id; });
+        if(!record) return;
+        if(!state.online){
+          record.status = '上传失败';
+          record.reason = '网络不可用';
+          renderHome();
+          openDetail(id);
+          toast('网络不可用，请恢复网络后重试');
+          return;
+        }
+        record.status = '上传中';
+        openDetail(id);
+        setTimeout(function(){
+          if(record.un1 === '3H1/Y1.5/50/24'){
+            record.status = '已上传';
+            record.validation = '不通过';
+            record.reason = '可用数量不足';
+          }else{
+            record.status = '已上传';
+            record.validation = '通过';
+            record.reason = '';
+          }
+          renderHome();
+          openDetail(id);
+          toast(record.validation === '通过' ? '上传成功' : '服务端校验未通过');
+        }, 700);
+      }
+
+      function pullData(){
+        if(!state.online){
+          showMsg('pullMsg', '网络不可用，获取失败。已有记录不受影响', true);
+          toast('网络不可用，无法获取服务器数据');
+          return;
+        }
+        hideMsg('pullMsg');
+        showMsg('pullMsg', '正在获取数据…', false);
+        setTimeout(function(){
+          let added = 0;
+          if(!state.server.find(function(r){ return r.id === 'S001'; })){
+            state.server.unshift({
+              id: 'S001', un1: '1A2/Y2.0/100/26', un2: 'CN/C222072 PI:001', raw1: '1A2/Y2.0/100/26', raw2: 'CN/C222072 PI:001', type: 1, qty: 1, photo: true,
+              status: '已上传', validation: '通过', manual: '无', reason: '',
+              time: '09:12', account: 'clerk02', android: 'e5f6g7h8', source: 'server'
+            });
+            added += 1;
+          }
+          if(!state.server.find(function(r){ return r.id === 'S002'; })){
+            state.server.push({
+              id: 'S002', un1: '1H1/Y1.8/150/25', un2: 'CN/C331088 PI:002', raw1: '1H1/Y1.8/150/25', raw2: 'CN/C331088 PI:002', type: 2, qty: 5, photo: true,
+              status: '已上传', validation: '通过', manual: '无', reason: '',
+              time: '08:47', account: 'clerk03', android: 'i9j0k1l2', source: 'server'
+            });
+            added += 1;
+          }
+          $('lastSync').textContent = '刚刚';
+          if(added){
+            showMsg('pullMsg', '已获取 ' + added + ' 条服务器记录', false);
+          }else{
+            showMsg('pullMsg', '暂无新数据', false);
+          }
+          renderRecords();
+          renderHome();
+          toast(added ? '已获取 ' + added + ' 条服务器记录' : '暂无新数据');
+        }, 700);
+      }
+    </script>
+
+  </div>
+</main>
+
+<footer>
+  施工现场 UN 号采集 App · 产品需求文档 v0.1 · 2026-11-02 · 本文与 requirement/plan.md 配套使用
+</footer>
+
+</body>
+</html>
